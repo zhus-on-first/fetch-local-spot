@@ -13,19 +13,43 @@ from config import app, db, api
 from models import User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
 
 # Views go here!
+
+# class Signup(Resource):
+#     def signup(self):
+#         new_user = User(
+#             username = "username", 
+#             email = "email", 
+#             password = hashed
+#         )
+#         return new_user, 200
+
+class Index(Resource):
+    def get(self):
+        return "<h1>Project Server</h1>"
+
+api.add_resource(Index, "/")
+
 class LocationList(Resource): # List all locations
     def get(self):
         locations = [location.to_dict() for location in Location.query.all()]
         return locations, 200
 
-api.add_resource(LocationList, "/")
+api.add_resource(LocationList, "/locations")
 
-class LocationDetail(Resource): # Reports for individual locations
-    def get(self, location_id):
-        reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+class LocationById(Resource):
+    def get(self, id):
+        location = Location.query.filter_by(id=id).first()
+        if location is None:
+            return {"error": "Location not found"}, 404
+        else:
+            return location.to_dict(rules=("-location_features", "-reports", "-location_type")), 200
+
+class ReportList(Resource):
+    def get(self):
+        reports = [report.to_dict() for report in Report.query.all()]
         return reports, 200
-
-    def post(self, location_id):
+    
+    def post(self):
         try:
             new_report = Report(
                 user_id = request.json.get("user_id"),
@@ -34,7 +58,7 @@ class LocationDetail(Resource): # Reports for individual locations
             db.session.add(new_report)
             db.session.commit()
 
-            return new_report.to_dict(), 201
+            return new_report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 201
         
         except ValueError as e:
             db.session.rollback()
@@ -43,8 +67,50 @@ class LocationDetail(Resource): # Reports for individual locations
             return {"errors": str(e)}, 400
 
 
+api.add_resource(ReportList, "/reports")
+
+class ReportById(Resource): # Reports for individual locations
+    def get(self, location_id):
+        reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+        return reports, 200
+
+
+
     def patch(self, location_id):
-        pass
+        report = Report.query.get(location_id)
+
+        if report is None:
+            return {"message": "Location not found"}, 404
+        else:
+            try:
+                for attr in request.json:
+                    setattr(report, attr, request.json.get(attr))
+
+                db.session.add(report)
+                db.session.commit()
+                return report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 200
+
+            except ValueError as e:
+                db.session.rollback()
+                return {"errors": str(e)}, 400
+            except Exception as e:
+                return {"errors": str(e)}, 400                
+        
+    def delete(self, location_id):
+        report = Report.query.get(location_id)
+
+        if report is None:
+            return {"message": "Location not found"}, 404
+        else:
+            try:
+                db.session.delete(report)
+                db.session.commit()
+                return {"message": "Report deleted successfully"}, 200
+            except Exception as e:
+                db.session.rollback()
+                return {"errors": str(e)}, 400
+            
+api.add_resource(ReportById, "/reports/<int:location_id>")
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
