@@ -24,7 +24,7 @@ def create_users():
 
     return users
 
-def create_reports():
+def create_reports(users, locations):
     reports = []
     for _ in range(10):
         r = Report(
@@ -81,15 +81,16 @@ def create_location_features():
         "Other"
     ]
 
+    location_features = []
+
     for location in locations:
         for feature_name in features_list:
-            # 50/50
-            if rc([True, False]):
                 location_feature = LocationFeature(
                     location_id=location.id,
                     feature=feature_name
                     )
-            return location_feature
+                location_features.append(location_feature)
+    return location_features
 
 def create_reported_features():
     reported_features = []
@@ -99,10 +100,11 @@ def create_reported_features():
         location_features = LocationFeature.query.filter_by(location_id=report.location_id).all()
 
         # Randomly set how many features report will have
-        num_features_in_report = randint(1, 4)
+        num_features_in_report = randint(1, 5)
+        print(f"Report ID: {report.id}, Number of Reported Features: {num_features_in_report}, Total Location Features: {len(location_features)}")
 
         # Randomly select some of the features
-        selected_features = random.sample(location_features, num_features_in_report)
+        selected_features = sample(location_features, num_features_in_report)
 
         for feature in selected_features:
             comment = fake.sentence()
@@ -132,19 +134,19 @@ if __name__ == '__main__':
         db.session.add_all(users)
         db.session.commit()
 
+        print("Seeding locations...")
+        locations = create_locations()
+        db.session.add_all(locations)
+        db.session.commit()
+
         print("Seeding reports...")
-        reports = create_reports()
+        reports = create_reports(users, locations)
         db.session.add_all(reports)
         db.session.commit()
 
         print("Seeding reported photos...")
         reported_photos = create_reported_photos()
         db.session.add_all(reported_photos)
-        db.session.commit()
-
-        print("Seeding locations...")
-        locations = create_locations()
-        db.session.add_all(locations)
         db.session.commit()
 
         print("Seeding location types...")

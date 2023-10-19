@@ -150,6 +150,7 @@ class ReportedFeature(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey("reports.id"), nullable=False)
     location_feature_id = db.Column(db.Integer, db.ForeignKey("location_features.id"), nullable=False)
+    comment = db.Column(db.String(255))
 
     # A reported_feature has a/belongs to a report
     report = db.relationship("Report", back_populates="reported_features", lazy=True)
