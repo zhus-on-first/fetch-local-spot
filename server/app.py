@@ -13,12 +13,38 @@ from config import app, db, api
 from models import User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
 
 # Views go here!
-class Index(Resource):
+class LocationList(Resource): # List all locations
     def get(self):
-        return "<h1>Project Server</h1>"
+        locations = [location.to_dict() for location in Location.query.all()]
+        return locations, 200
 
-api.add_resource(Index, "/")
+api.add_resource(LocationList, "/")
 
+class LocationDetail(Resource): # Reports for individual locations
+    def get(self, location_id):
+        reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+        return reports, 200
+
+    def post(self, location_id):
+        try:
+            new_report = Report(
+                user_id = request.json.get("user_id"),
+                location_id = request.json.get("location_id")
+            )
+            db.session.add(new_report)
+            db.session.commit()
+
+            return new_report.to_dict(), 201
+        
+        except ValueError as e:
+            db.session.rollback()
+            return {"errors": str(e)}, 400
+        except Exception as e:
+            return {"errors": str(e)}, 400
+
+
+    def patch(self, location_id):
+        pass
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
