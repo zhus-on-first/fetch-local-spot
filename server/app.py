@@ -13,12 +13,18 @@ from config import app, db, api
 from models import User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
 
 # Views go here!
+class Index(Resource):
+    def get(self):
+        return "<h1>Project Server</h1>"
+
+api.add_resource(Index, "/")
+
 class LocationList(Resource): # List all locations
     def get(self):
-        locations = [location.to_dict() for location in Location.query.all()]
+        locations = [location.to_dict(only=("id", "name", "address", "phone", "location_type_id")) for location in Location.query.all()]
         return locations, 200
 
-api.add_resource(LocationList, "/")
+api.add_resource(LocationList, "/locations")
 
 class LocationDetail(Resource): # Reports for individual locations
     def get(self, location_id):
@@ -42,8 +48,15 @@ class LocationDetail(Resource): # Reports for individual locations
         except Exception as e:
             return {"errors": str(e)}, 400
 
-
     def patch(self, location_id):
+        location = Location.query.get(location_id)
+
+        if location is None:
+            return {"message": "Location not found"}, 404
+        
+        
+
+    def delete(self, location_id):
         pass
 
 if __name__ == "__main__":
