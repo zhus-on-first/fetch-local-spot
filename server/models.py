@@ -64,8 +64,8 @@ class ReportedPhoto(db.Model, SerializerMixin):
     # A reported photo has a/belongs to a report
     report = db.relationship("Report", back_populates="reported_photos", lazy=True)
 
-    # Has many features through report_features
-    features = association_proxy("report_features", "location_feature.feature")
+    # Has many features through reported_features
+    features = association_proxy("reported_features", "location_feature.feature")
 
     # Serialization
     serialize_rules = ("-report.reported_photos",)
@@ -95,7 +95,7 @@ class Location(db.Model, SerializerMixin):
     # Has many features through location_features: location.features
     features = association_proxy("location_features", "feature")
 
-    # Has many photos through ???
+    # Has many photos through reported_photos
     photo_urls = association_proxy("reported_photos", "photo_url")
 
     # Serialization
