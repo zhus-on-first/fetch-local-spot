@@ -18,7 +18,7 @@ class User(db.Model, SerializerMixin):
     # Association Proxy
 
     # Serialization
-    serialize_rules = ("-reports.user")
+    serialize_rules = ("-reports",)
 
     def __repr__(self):
         return f"<User(id={self.id}: username={self.username}, email={self.email}, password={self.password})>"
@@ -49,7 +49,7 @@ class Report(db.Model, SerializerMixin):
     locations = association_proxy("reported_features", "location_features.location")
 
     # Serialization
-    serialize_rules = ("-reported_photos.reports", "-user.reports", "-location.reports")
+    serialize_rules = ("-reported_features", "-reported_photos", "-user", "-location")
 
     def __repr__(self):
         return f"<Report(id={self.id}: user_id={self.user_id}, location_id={self.location_id})>"
@@ -68,7 +68,7 @@ class ReportedPhoto(db.Model, SerializerMixin):
     features = association_proxy("reported_features", "location_feature.feature")
 
     # Serialization
-    serialize_rules = ("-report.reported_photos",)
+    serialize_rules = ("-report",)
 
     def __repr__(self):
         return f"<ReportPhoto(id={self.id}: report_id={self.report_id}, photo_url={self.photo_url})>"
@@ -98,7 +98,7 @@ class Location(db.Model, SerializerMixin):
     photo_urls = association_proxy("reported_photos", "photo_url")
 
     # Serialization
-    serialize_rules = ("-location_type.locations", "-reports.locations", "-location_features.locations")
+    serialize_rules = ("-location_features", "-reports", "-location_type")
 
     def __repr__(self):
         return f"<Location(id={self.id}: name={self.name}, address={self.address}, phone={self.phone}, type_id={self.type_id})>"
@@ -116,7 +116,7 @@ class LocationType(db.Model, SerializerMixin): # one of "find a hike", "find a f
 
 
     # Serialize rule
-    serialize_rules = ("-locations.location_types",)
+    serialize_rules = ("-locations",)
 
     def __repr__(self):
         return f"<LocationType(id={self.id}: name={self.name})>"
@@ -138,7 +138,7 @@ class LocationFeature(db.Model, SerializerMixin):
     reports = association_proxy("reported_features", "report")
 
     # Serialization
-    serialize_rules = ("-location.location_features", "-reported_features.location_features")
+    serialize_rules = ("-location", "-reported_features")
 
     def __repr__(self):
         return f"<LocationFeature(id={self.id} location_id={self.location_id}, feature={self.feature})>"
@@ -160,7 +160,7 @@ class ReportedFeature(db.Model, SerializerMixin):
     # Association Proxy
 
     # Serialization
-    serialize_rules = ("-location_feature.reported_features", "-report.reported_features")
+    serialize_rules = ("-location_feature", "-report")
 
     def __repr__(self):
         return f"<ReportedFeature(id={self.id} report_id={self.report_id} location_feature_id={self.location_feature_id})>"
