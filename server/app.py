@@ -44,6 +44,7 @@ class LocationById(Resource):
         else:
             return location.to_dict(rules=("-location_features", "-reports", "-location_type")), 200
 
+api.add_resource(LocationById, "/locations/<int:id>")
 class ReportList(Resource):
     def get(self):
         reports = [report.to_dict() for report in Report.query.all()]
