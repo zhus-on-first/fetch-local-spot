@@ -80,7 +80,7 @@ class Location(db.Model, SerializerMixin):
     name = db.Column(db.String(50), nullable=False)
     address = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(15))
-    location_type_id = db.Column(db.Integer, db.ForeignKey('location_types.id'), nullable=False)
+    location_type_id = db.Column(db.Integer, db.ForeignKey('location_types.id'))
 
     # A location has many location features
     location_features = db.relationship("LocationFeature", back_populates="location")

@@ -33,6 +33,28 @@ class LocationList(Resource): # List all locations
     def get(self):
         locations = [location.to_dict() for location in Location.query.all()]
         return locations, 200
+    
+    def post(self):
+        print("Received POST request")
+        try:
+            new_location = Location(
+                name = request.json.get("name"),
+                address = request.json.get("address"),
+                phone = request.json.get("phone"),
+                location_type_id= request.json.get("location_type_id")
+            )
+            db.session.add(new_location)
+            db.session.commit()
+
+            # Add handling of location_features, reports, and location_type
+            return new_location.to_dict(), 201
+        
+        except ValueError as e:
+            db.session.rollback()
+            return {"errors": str(e)}, 400
+        except Exception as e:
+            db.session.rollback()
+            return {"errors": str(e)}, 400 
 
 api.add_resource(LocationList, "/locations")
 
@@ -43,7 +65,8 @@ class LocationById(Resource):
             return {"error": "Location not found"}, 404
         else:
             return location.to_dict(rules=("-location_features", "-reports", "-location_type")), 200
-
+    
+          
 api.add_resource(LocationById, "/locations/<int:id>")
 class ReportList(Resource):
     def get(self):
@@ -59,6 +82,7 @@ class ReportList(Resource):
             db.session.add(new_report)
             db.session.commit()
 
+            # Add handling of reported_features and reported_photos
             return new_report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 201
         
         except ValueError as e:
@@ -67,15 +91,12 @@ class ReportList(Resource):
         except Exception as e:
             return {"errors": str(e)}, 400
 
-
 api.add_resource(ReportList, "/reports")
 
 class ReportById(Resource): # Reports for individual locations
     def get(self, location_id):
         reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
         return reports, 200
-
-
 
     def patch(self, location_id):
         report = Report.query.get(location_id)
