@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 function LocationCard({ location }) {
     return (
@@ -12,4 +12,4 @@ function LocationCard({ location }) {
 }
 
 
-export default LocationCard
+export default LocationCard;

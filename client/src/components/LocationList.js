@@ -2,22 +2,28 @@ import React, { useEffect, useState } from "react";
 import LocationCard from "./LocationCard";
 
 function LocationList() {
-    const locations = [
-        {
-            id: 1,
-            name: "Central Park",
-            address: "New York, New York",
-            phone: "123-456-7890",
-            location_type_id: 1
-        },
-        {
-            id: 2,
-            name: "Golden Gardens",
-            address: "Seattle, WA",
-            phone: "123-456-7890",
-            location_type_id: 2
-        }
-    ]
+    const [locations, setLocations] = useState([]);
+
+    useEffect(() => {
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch("http://localhost:5555/locations");
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                const api_data = await response.json();
+                setLocations(api_data);
+            } 
+            catch (error) {
+                console.error("There was a problem with the fetch:", error)
+            }
+        };
+
+        fetchData();
+    }, []); // empty array makes sure effect runs only once when it mounts.
+
+
     return (
         <div>
             {locations.map((location) => (
@@ -27,4 +33,4 @@ function LocationList() {
     );
 }
 
-export default LocationList
+export default LocationList;

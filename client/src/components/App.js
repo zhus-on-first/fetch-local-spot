@@ -9,7 +9,7 @@ function App() {
     <div className="App">
       <h1>Fetch! Local Spots</h1>
       <h2>Sniff.Sit.Stay.Visit.</h2>
-      
+      <h3>All Locations:</h3>
       <LocationList />
 
     </div>
