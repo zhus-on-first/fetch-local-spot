@@ -1,18 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Switch, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import LocationList from "./LocationList"; 
+
+import HomePage from "../pages/HomePage";
+import LocationDetailsPage from "../pages/LocationDetailsPage"
+
 
 function App() {
 
-  return (
-    <div className="App">
-      <h1>Fetch! Local Spots</h1>
-      <h2>Sniff.Sit.Stay.Visit.</h2>
-      <h3>All Locations:</h3>
-      <LocationList />
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
-    </div>
+  return (
+    <Router>
+      <Switch>
+        <Route path="/" exact>
+          <HomePage />
+        </Route>
+        <Route path="/locations/1">
+          <LocationDetailsPage />
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 
