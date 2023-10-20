@@ -63,7 +63,7 @@ def create_locations():
     return locations
 
 def create_location_types():
-    location_type_names = ["find a hike", "find a food spot", "find a ride"]
+    location_type_names = ["hike", "food spot", "ride"]
     location_types = []   
 
     for location_type_name in location_type_names:
