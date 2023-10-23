@@ -51,7 +51,7 @@ def create_reported_photos():
 
 def create_locations():
     locations = []
-    for _ in range(5):
+    for _ in range(10):
         loc = Location(
            name = fake.name(),
            address = fake.address(),
@@ -63,7 +63,7 @@ def create_locations():
     return locations
 
 def create_location_types():
-    location_type_names = ["hike", "food spot", "ride"]
+    location_type_names = ["hike", "food", "ride"]
     location_types = []   
 
     for location_type_name in location_type_names:
