@@ -91,7 +91,10 @@ class Location(db.Model, SerializerMixin):
     # A location has a/belongs to location_type
     location_type = db.relationship("LocationType", back_populates="locations")
 
-    # Has many features through location_features: location.features
+    # Has a location name through location_type
+    location_type_name = association_proxy("location_type", "name")
+
+    # Has many features through location_features
     features = association_proxy("location_features", "feature")
 
     # Has many photos through reported_photos

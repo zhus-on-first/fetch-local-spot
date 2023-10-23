@@ -14,14 +14,14 @@ from models import User, Report, ReportedPhoto, Location, LocationType, Location
 
 # Views go here!
 
-# class Signup(Resource):
-#     def signup(self):
-#         new_user = User(
-#             username = "username", 
-#             email = "email", 
-#             password = hashed
-#         )
-#         return new_user, 200
+class Signup(Resource):
+    def signup(self):
+        new_user = User(
+        username = "username", 
+        email = "email", 
+        password = hashed
+        )
+        return new_user, 200
 
 class Index(Resource):
     def get(self):
@@ -66,8 +66,29 @@ class LocationById(Resource):
         else:
             return location.to_dict(rules=("-location_features", "-reports", "-location_type")), 200
     
-          
 api.add_resource(LocationById, "/locations/<int:id>")
+
+class LocationByHikingType(Resource):
+    def get(self):
+        hiking_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="hike")]
+        return hiking_locations, 200
+    
+api.add_resource(LocationByHikingType, "/locations/find-a-hike")
+
+class LocationByFoodType(Resource):
+    def get(self):
+        food_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="food")]
+        return food_locations, 200
+    
+api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
+
+class LocationByRideType(Resource):
+    def get(self):
+        ride_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="ride")]
+        return ride_locations, 200
+    
+api.add_resource(LocationByRideType, "/locations/find-a-ride")
+
 class ReportList(Resource):
     def get(self):
         reports = [report.to_dict() for report in Report.query.all()]
