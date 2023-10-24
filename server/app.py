@@ -96,15 +96,51 @@ class ReportList(Resource):
     
     def post(self):
         try:
+            data = request.json
+
             new_report = Report(
-                user_id = request.json.get("user_id"),
-                location_id = request.json.get("location_id")
+                user_id = data.get("user_id"),
+                location_id = data.get("location_id"),
+                comment = data.get("comment")
             )
             db.session.add(new_report)
-            db.session.commit()
+            db.session.flush()
 
-            # Add handling of reported_features and reported_photos
-            return new_report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 201
+            for photo_url in data.get("photos", []):
+                new_photo = ReportedPhoto(
+                    report_id=new_report.id,
+                    photo_url=photo_url
+                )
+                db.session.add(new_photo)
+
+            # Handle Features
+            # For each feature, set the LocationFeature. 
+            # Match to its corresponding location_feature_id in ReportedFeature
+            # Then insert it into the ReportedFeature table, linked to the new report's ID.
+
+            for feature_name in data["features"]:
+                # Check if feature already exists for this location
+                location_feature = LocationFeature.query.filter_by(
+                    location_id=new_report.location_id, feature=feature_name
+                    ).first()
+                
+                # If feature name doesn't exist, create a new entry
+                if location_feature is None:
+                    location_feature = LocationFeature( # 1. Lookup the corresponding location_feature_id
+                        location_id=new_report.location_id, feature=feature_name
+                    )
+                    db.session.add(location_feature)
+                    db.session.flush()
+
+                # Create new ReportFeature entry to link LocationFeature to Report
+                report_location_new_feature = ReportedFeature(    
+                    report_id=new_report.id,
+                    location_feature_id=location_feature.id # 2. Set it in the ReportFeature table
+                )
+                db.session.add(report_location_new_feature)
+                            
+            db.session.commit()
+            return new_report.to_dict(), 201
         
         except ValueError as e:
             db.session.rollback()
@@ -114,46 +150,77 @@ class ReportList(Resource):
 
 api.add_resource(ReportList, "/reports")
 
-class ReportById(Resource): # Reports for individual locations
-    def get(self, location_id):
-        reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
-        return reports, 200
-
-    def patch(self, location_id):
-        report = Report.query.get(location_id)
-
+class ReportById(Resource):
+    def get(self, report_id):
+        report = db.session.query(Report).filter_by(id=id).first()
         if report is None:
-            return {"message": "Location not found"}, 404
+            return {"message": "Report not found"}, 404
+        else:
+            return report.to_dict(), 200
+    
+    def patch(self, report_id):
+        report = db.session.query(Report).filter_by(id=id).first()
+        if report is None:
+            return {"message": "Report not found"}, 404
         else:
             try:
                 for attr in request.json:
                     setattr(report, attr, request.json.get(attr))
-
-                db.session.add(report)
                 db.session.commit()
-                return report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 200
-
-            except ValueError as e:
+                return report.to_dict(), 200
+            except Exception as e:
                 db.session.rollback()
                 return {"errors": str(e)}, 400
-            except Exception as e:
-                return {"errors": str(e)}, 400                
-        
-    def delete(self, location_id):
-        report = Report.query.get(location_id)
 
-        if report is None:
-            return {"message": "Location not found"}, 404
+    def delete(self, report_id):
+        report = db.session.query(Report).filter_by(id=id).first()
+        if report is None:           
+            return {"message": "Report not found"}, 404
         else:
-            try:
-                db.session.delete(report)
-                db.session.commit()
-                return {"message": "Report deleted successfully"}, 200
-            except Exception as e:
-                db.session.rollback()
-                return {"errors": str(e)}, 400
+            db.session.delete(report)
+            db.session.commit()
+            return {"message": "Report deleted"}, 200
+        
+# class ReportByLocationId(Resource): # Reports for individual locations
+#     def get(self, location_id):
+#         reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+#         return reports, 200
+
+#     def patch(self, location_id):
+#         report = Report.query.get(location_id)
+
+#         if report is None:
+#             return {"message": "Location not found"}, 404
+#         else:
+#             try:
+#                 for attr in request.json:
+#                     setattr(report, attr, request.json.get(attr))
+
+#                 db.session.add(report)
+#                 db.session.commit()
+#                 return report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 200
+
+#             except ValueError as e:
+#                 db.session.rollback()
+#                 return {"errors": str(e)}, 400
+#             except Exception as e:
+#                 return {"errors": str(e)}, 400                
+        
+#     def delete(self, location_id):
+#         report = Report.query.get(location_id)
+
+#         if report is None:
+#             return {"message": "Location not found"}, 404
+#         else:
+#             try:
+#                 db.session.delete(report)
+#                 db.session.commit()
+#                 return {"message": "Report deleted successfully"}, 200
+#             except Exception as e:
+#                 db.session.rollback()
+#                 return {"errors": str(e)}, 400
             
-api.add_resource(ReportById, "/reports/<int:location_id>")
+# api.add_resource(ReportByLocationId, "/reports/<int:location_id>")
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)

@@ -27,9 +27,11 @@ def create_users():
 def create_reports(users, locations):
     reports = []
     for _ in range(10):
+        comment = fake.sentence()
         r = Report(
             user = rc(users),
-            location = rc(locations)
+            location = rc(locations),
+            comment=comment
         )
         reports.append(r)
 
@@ -107,11 +109,9 @@ def create_reported_features():
         selected_features = sample(location_features, num_features_in_report)
 
         for feature in selected_features:
-            comment = fake.sentence()
             reported_feature = ReportedFeature(
                 report_id=report.id, 
                 location_feature_id=feature.id, 
-                comment=comment
                 )
             reported_features.append(reported_feature)
 
