@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReportForm from "../components/ReportForm";
+import NewReportForm from "../components/NewReportForm";
 import LocationList from "../components/LocationList"
 import LocationForm from "../components/LocationForm";
 
@@ -63,7 +63,7 @@ function LocationDetailsPage({id}) {
             </ul>
     
             <h2>Submit a New Report</h2>
-        <ReportForm handleNewReport={handleNewReport} />
+        <NewReportForm handleNewReport={handleNewReport} />
 
         {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>

@@ -32,7 +32,7 @@ function LocationForm({handleNewLocation}) {
         body: JSON.stringify(values),
       };
 
-      const response = await fetch("http://localhost:5555/locations", config);
+      const response = await fetch("/locations", config);
 
       if (response.ok) {
         const newLocation = await response.json();

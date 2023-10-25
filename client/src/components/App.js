@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 
 import HomePage from "../pages/HomePage";
-import LocationDetailsPage from "../pages/LocationDetailsPage"
+import FindHikePage from "../pages/FindHikePage";
+import FindRidePage from "../pages/FindRidePage";
+import FindFoodPage from "../pages/FindFoodPage";
 
 
 function App() {
@@ -18,8 +20,14 @@ function App() {
         <Route path="/" exact>
           <HomePage />
         </Route>
-        <Route path="/locations/1">
-          <LocationDetailsPage />
+        <Route path="/locations/find-a-hike">
+          <FindHikePage />
+        </Route>
+        <Route path="/locations/find-a-ride">
+          <FindRidePage />
+        </Route>
+        <Route path="/locations/find-a-food-spot">
+          <FindFoodPage />
         </Route>
       </Switch>
     </Router>
