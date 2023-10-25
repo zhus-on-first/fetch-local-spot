@@ -3,8 +3,8 @@
 # Standard library imports
 
 # Remote library imports
-from flask import request, make_response
-from flask_restful import Resource, reqparse
+from flask import request
+from flask_restful import Resource
 
 # Local imports
 from config import app, db, api
@@ -73,22 +73,37 @@ api.add_resource(LocationById, "/locations/<int:id>")
 
 class LocationByHikingType(Resource):
     def get(self):
-        hiking_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="hike")]
-        return hiking_locations, 200
+        hiking_locations = db.session.query(Location)\
+            .join(LocationType)\
+            .filter(LocationType.name == "hike")\
+            .all()
+        
+        hiking_locations_dicts = [location.to_dict() for location in hiking_locations]
+        return hiking_locations_dicts, 200
     
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
 
 class LocationByFoodType(Resource):
     def get(self):
-        food_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="food")]
-        return food_locations, 200
+        food_locations = db.session.query(Location)\
+            .join(LocationType)\
+            .filter(LocationType.name == "food")\
+            .all()
+        
+        food_locations_dict = [location.to_dict() for location in food_locations]
+        return food_locations_dict, 200
     
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
 class LocationByRideType(Resource):
     def get(self):
-        ride_locations = [location.to_dict() for location in Location.query.filter_by(location_type_name="ride")]
-        return ride_locations, 200
+        ride_locations = db.session.query(Location)\
+            .join(LocationType)\
+            .filter(LocationType.name == "ride")\
+            .all()
+        
+        ride_locations_dict = [location.to_dict() for location in ride_locations]
+        return ride_locations_dict, 200
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 

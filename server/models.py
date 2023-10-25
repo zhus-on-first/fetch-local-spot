@@ -1,6 +1,7 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 
+
 from config import db
 
 # Models go here!
@@ -84,8 +85,8 @@ class Location(db.Model, SerializerMixin):
     # A location has many location_features
     location_features = db.relationship("LocationFeature", back_populates="location")
 
-    # Has a location name through location_types
-    location_type_name = association_proxy("location_types", "name")
+    # A location has a location name through location_types
+    location_type_name = association_proxy("location_type", "name")
 
     # A location has as many photos through reports
     location_photos = association_proxy("reports", "reported_photos")
