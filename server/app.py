@@ -50,7 +50,6 @@ class LocationList(Resource): # List all locations
             db.session.add(new_location)
             db.session.commit()
 
-            # Add handling of location_features, reports, and location_type
             return new_location.to_dict(), 201
         
         except ValueError as e:
