@@ -8,7 +8,7 @@ from faker import Faker
 
 # Local imports
 from app import app
-from models import db, User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
+from models import db, User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
 
 fake = Faker()
 
@@ -26,7 +26,9 @@ def create_users():
 
 def create_reports(users, locations):
     reports = []
+
     for _ in range(10):
+        # Create new report
         comment = fake.sentence()
         r = Report(
             user = rc(users),
@@ -37,17 +39,17 @@ def create_reports(users, locations):
 
     return reports
 
-def create_reported_photos():
+def create_reported_photos(reports):
     reported_photos = []
 
     for report in reports:
-        img_width = randint(100, 500)
-        img_height = randint(100, 500)
+            if rc([True, False]):
+                img_width = randint(100, 500)
+                img_height = randint(100, 500)
+                photo_url = f"https://picsum.photos/{img_width}/{img_height}"
 
-        photo_url = f"https://picsum.photos/{img_width}/{img_height}"
-
-        reported_photo = ReportedPhoto(report_id=report.id, photo_url=photo_url)
-        reported_photos.append(reported_photo)
+                reported_photo = ReportedPhoto(report_id=report.id, photo_url=photo_url)
+                reported_photos.append(reported_photo)
 
     return reported_photos
 
@@ -73,55 +75,61 @@ def create_location_types():
         location_types.append(location_type)
  
     return location_types
-    
-def create_location_features():
+
+def create_features():
     features_list = [
         "Seating with heat lamps",
         "Covered seating",
         "Dogs allowed inside",
         "Reservation system",
     ]
+    features = []
 
+    for feature_name in features_list:
+        feature=Feature(name=feature_name)
+        features.append(feature)
+
+    return features
+    
+def create_location_features(locations, features):
     location_features = []
 
     for location in locations:
-
         # Randomly decide if location will have features
         if rc([True, False]):
             num_features = randint(0, 4)
-            selected_features = sample(features_list, num_features)
-            for feature_name in selected_features:
-                    location_feature = LocationFeature(
-                        location_id=location.id,
-                        feature=feature_name
-                        )
-                    location_features.append(location_feature)
+            selected_features = sample(features, num_features)
+
+            for feature in selected_features:
+                location_feature = LocationFeature(
+                    location_id=location.id,
+                    feature_id=feature.id
+                    )
+                location_features.append(location_feature)
     return location_features
 
-def create_reported_features():
+def create_reported_features(reports, features):
     reported_features = []
 
     for report in reports:
-        # Get all location features for associated report location
-        location_features = LocationFeature.query.filter_by(location_id=report.location_id).all()
+        # Randomly set how many features report will have
+        num_features_in_report = randint(0, min(4, len(features)))
 
-        if location_features is not None:
-            # Randomly set how many features report will have
-            num_features_in_report = randint(0, min(5, len(location_features)))
-            print(f"Report ID: {report.id}, Number of Reported Features: {num_features_in_report}, Total Location Features: {len(location_features)}")
+        # Randomly select some of the features
+        selected_features = sample(features, num_features_in_report)
 
-            if num_features_in_report > 0:
-                # Randomly select some of the features
-                selected_features = sample(location_features, num_features_in_report)
+        # Get names of selected features
+        selected_feature_names = [feature.name for feature in selected_features]
 
-                for feature in selected_features:
-                    reported_feature = ReportedFeature(
-                        report_id=report.id, 
-                        location_feature_id=feature.id, 
-                        )
-                    reported_features.append(reported_feature)
-        else:
-            pass
+        print(f"Report ID: {report.id}, Number of Reported Features: {num_features_in_report}, Total Features: {len(features)}, Selected Features: {selected_feature_names}")
+
+
+        for feature in selected_features:
+            reported_feature = ReportedFeature(
+                report_id=report.id, 
+                feature_id=feature.id, 
+                )
+            reported_features.append(reported_feature)
 
     return reported_features
    
@@ -134,6 +142,7 @@ if __name__ == '__main__':
         ReportedPhoto.query.delete()
         Location.query.delete()
         LocationType.query.delete()
+        Feature.query.delete()
         LocationFeature.query.delete()
         ReportedFeature.query.delete()
 
@@ -145,7 +154,7 @@ if __name__ == '__main__':
         print("Seeding locations...")
         locations = create_locations()
         db.session.add_all(locations)
-        db.session.commit()
+        db.session.flush()
 
         print("Seeding reports...")
         reports = create_reports(users, locations)
@@ -153,7 +162,7 @@ if __name__ == '__main__':
         db.session.commit()
 
         print("Seeding reported photos...")
-        reported_photos = create_reported_photos()
+        reported_photos = create_reported_photos(reports)
         db.session.add_all(reported_photos)
         db.session.commit()
 
@@ -162,13 +171,18 @@ if __name__ == '__main__':
         db.session.add_all(location_types)
         db.session.commit()
 
+        print("Seeding features")
+        features = create_features()
+        db.session.add_all(features)
+        db.session.flush()
+
         print("Seeding location features...")
-        location_features = create_location_features()
+        location_features = create_location_features(locations, features)
         db.session.add_all(location_features)
-        db.session.commit()
+        db.session.flush()
 
         print("Seeding reported features...")
-        reported_features = create_reported_features()
+        reported_features = create_reported_features(reports, features)
         db.session.add_all(reported_features)
         db.session.commit()
 
