@@ -7,7 +7,7 @@ function LocationList() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("http://localhost:5555/locations");
+                const response = await fetch("/locations");
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
