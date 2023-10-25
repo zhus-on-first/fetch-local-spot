@@ -4,7 +4,7 @@
 
 # Remote library imports
 from flask import request, make_response
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 
 # Local imports
 from config import app, db, api
@@ -12,23 +12,27 @@ from config import app, db, api
 # Add your model imports
 from models import User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
 
-# Views go here!
-
-class Signup(Resource):
-    def signup(self):
-        new_user = User(
-        username = "username", 
-        email = "email", 
-        password = hashed
-        )
-        return new_user, 200
-
+# Views go here
 class Index(Resource):
     def get(self):
         return "<h1>Project Server</h1>"
 
 api.add_resource(Index, "/")
 
+class UserList(Resource):
+    def get(self):
+        users = [user.to_dict() for user in User.query.all()]
+        return users, 200
+    
+    # def signup(self):
+    #     new_user = User(
+    #     username = "username", 
+    #     email = "email", 
+    #     password = hashed
+    #     )
+    #     return new_user, 200
+    
+api.add_resource(UserList, "/users")
 class LocationList(Resource): # List all locations
     def get(self):
         locations = [location.to_dict() for location in Location.query.all()]
@@ -64,7 +68,7 @@ class LocationById(Resource):
         if location is None:
             return {"error": "Location not found"}, 404
         else:
-            return location.to_dict(rules=("-location_features", "-reports", "-location_type")), 200
+            return location.to_dict(), 200
     
 api.add_resource(LocationById, "/locations/<int:id>")
 
@@ -89,6 +93,16 @@ class LocationByRideType(Resource):
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
+class LocationFeaturesByLocationId(Resource):
+    def get(self, location_id):
+        location_features = [
+            feature.to_dict() for feature 
+            in LocationFeature.query.filter_by(location_id=location_id).all()
+            ]
+        
+        return location_features, 200
+    
+api.add_resource(LocationFeaturesByLocationId, "/locations/<int:location_id>/features")
 class ReportList(Resource):
     def get(self):
         reports = [report.to_dict() for report in Report.query.all()]

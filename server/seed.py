@@ -80,18 +80,22 @@ def create_location_features():
         "Covered seating",
         "Dogs allowed inside",
         "Reservation system",
-        "Other"
     ]
 
     location_features = []
 
     for location in locations:
-        for feature_name in features_list:
-                location_feature = LocationFeature(
-                    location_id=location.id,
-                    feature=feature_name
-                    )
-                location_features.append(location_feature)
+
+        # Randomly decide if location will have features
+        if rc([True, False]):
+            num_features = randint(0, 4)
+            selected_features = sample(features_list, num_features)
+            for feature_name in selected_features:
+                    location_feature = LocationFeature(
+                        location_id=location.id,
+                        feature=feature_name
+                        )
+                    location_features.append(location_feature)
     return location_features
 
 def create_reported_features():
@@ -101,19 +105,23 @@ def create_reported_features():
         # Get all location features for associated report location
         location_features = LocationFeature.query.filter_by(location_id=report.location_id).all()
 
-        # Randomly set how many features report will have
-        num_features_in_report = randint(1, 5)
-        print(f"Report ID: {report.id}, Number of Reported Features: {num_features_in_report}, Total Location Features: {len(location_features)}")
+        if location_features is not None:
+            # Randomly set how many features report will have
+            num_features_in_report = randint(0, min(5, len(location_features)))
+            print(f"Report ID: {report.id}, Number of Reported Features: {num_features_in_report}, Total Location Features: {len(location_features)}")
 
-        # Randomly select some of the features
-        selected_features = sample(location_features, num_features_in_report)
+            if num_features_in_report > 0:
+                # Randomly select some of the features
+                selected_features = sample(location_features, num_features_in_report)
 
-        for feature in selected_features:
-            reported_feature = ReportedFeature(
-                report_id=report.id, 
-                location_feature_id=feature.id, 
-                )
-            reported_features.append(reported_feature)
+                for feature in selected_features:
+                    reported_feature = ReportedFeature(
+                        report_id=report.id, 
+                        location_feature_id=feature.id, 
+                        )
+                    reported_features.append(reported_feature)
+        else:
+            pass
 
     return reported_features
    
