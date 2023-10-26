@@ -5,12 +5,15 @@
 # Remote library imports
 from flask import request
 from flask_restful import Resource
+from faker import Faker
 
 # Local imports
 from config import app, db, api
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
+
+fake = Faker()
 
 # Views go here
 class Index(Resource):
@@ -39,7 +42,8 @@ class LocationList(Resource): # List all locations and useful into
         locations = [
             {**location.to_dict(), 
              "location_type_name": location.location_type_name,
-             "feature_names": [location_feature.feature_name for location_feature in location.location_features]
+             "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
+             "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
              } 
             for location in Location.query.all()]
         return locations, 200
@@ -144,7 +148,9 @@ api.add_resource(FeatureList, "/features")
 class LocationFeaturesByLocationId(Resource):
     def get(self, location_id):
         location_features = [
-            {**feature.to_dict(), "feature_name": feature.feature_name} for feature 
+            {**feature.to_dict(), 
+             "feature_name": feature.feature_name
+             } for feature 
             in LocationFeature.query.filter_by(location_id=location_id).all()
             ]
             
@@ -160,6 +166,19 @@ class ReportList(Resource):
     def post(self):
         try:
             data = request.json
+
+            # Create new user if it doesn't exist
+            user_id = data.get("user_id")
+            user = User.query.filter_by(id=user_id).first()
+            if user is None:
+                user = User(
+                    id = user_id,
+                    username = fake.user_name(),
+                    email = fake.email(),
+                    password = fake.password()
+                    )
+                db.session.add(user)
+                db.session.flush
 
             new_report = Report(
                 user_id = data.get("user_id"),

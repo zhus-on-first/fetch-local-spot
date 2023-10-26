@@ -7,13 +7,13 @@ function LocationList() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("http://127.0.0.1:5555/locations");
+                const response = await fetch("/locations");
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
-                const api_data = await response.json();
-                console.log(api_data)
-                setLocations(api_data);
+                const apiData = await response.json();
+                console.log(apiData)
+                setLocations(apiData);
             } catch (error) {
                 console.error("There was a problem with the fetch:", error)
             }

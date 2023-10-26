@@ -4,8 +4,12 @@ import React from "react";
 function LocationCard({ location }) {
     console.log("Location object:", location);
     
-    const featureNamesList = location.feature_names.map((feature_name, index) => {
-        return <li key={index}>{feature_name}</li>;
+    const featureNamesList = location.location_feature_names.map((location_feature_name, index) => {
+        return <li key={index}>{location_feature_name}</li>;
+    });
+
+    const reportedFeaturesList = location.reported_features_names.map((reported_features_name, index) => {
+        return <li key={index}>{reported_features_name}</li>;
     });
     return (
         <div>
@@ -13,8 +17,10 @@ function LocationCard({ location }) {
             <p>{location.address}</p>
             <p>{location.phone}</p>
             <p>Location Type: {location.location_type_name}</p>
-            <p>Features:</p>
+            <p>Location Features:</p>
             <ul>{featureNamesList}</ul>
+            <p>Reported Features:</p>
+            <ul>{reportedFeaturesList}</ul>
         </div>
     );
 }
