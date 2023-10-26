@@ -148,7 +148,9 @@ api.add_resource(FeatureList, "/features")
 class LocationFeaturesByLocationId(Resource):
     def get(self, location_id):
         location_features = [
-            {**feature.to_dict(), "feature_name": feature.feature_name} for feature 
+            {**feature.to_dict(), 
+             "feature_name": feature.feature_name
+             } for feature 
             in LocationFeature.query.filter_by(location_id=location_id).all()
             ]
             
