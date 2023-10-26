@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import LocationList from "../components/LocationList"
 import Header from "../components/Header"
+import LocationCard from "../components/LocationCard";
 
 
 function LocationDetailsPage() {
@@ -41,11 +41,12 @@ function LocationDetailsPage() {
           <>
             <Header />
             <h1>Location Details</h1>
-            <div>
+            {/* <div>
               <p>Name: {locationDetails.name}</p>
               <p>Address: {locationDetails.address}</p>
               <p>Phone: {locationDetails.phone}</p>
-            </div>
+            </div> */}
+            <LocationCard location={locationDetails}/>
             {errors.map((err) => (
               <p key={err} style={{ color: "red" }}>
                 {err}
