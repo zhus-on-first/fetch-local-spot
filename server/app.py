@@ -5,12 +5,15 @@
 # Remote library imports
 from flask import request
 from flask_restful import Resource
+from faker import Faker
 
 # Local imports
 from config import app, db, api
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
+
+fake = Faker()
 
 # Views go here
 class Index(Resource):
@@ -160,6 +163,19 @@ class ReportList(Resource):
     def post(self):
         try:
             data = request.json
+
+            # Create new user if it doesn't exist
+            user_id = data.get("user_id")
+            user = User.query.filter_by(id=user_id).first()
+            if user is None:
+                user = User(
+                    id = user_id,
+                    username = fake.user_name(),
+                    email = fake.email(),
+                    password = fake.password()
+                    )
+                db.session.add(user)
+                db.session.flush
 
             new_report = Report(
                 user_id = data.get("user_id"),
