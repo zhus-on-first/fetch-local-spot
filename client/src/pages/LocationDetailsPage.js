@@ -18,7 +18,7 @@ function LocationDetailsPage() {
         if (response.ok) {
           const data = await response.json();
           console.log("Data received:", data)
-          if (data && data) { // Check that data is available before setting state
+          if (data) { // Check that data is available before setting state
             setLocationDetails(data);
           }
 
@@ -41,11 +41,6 @@ function LocationDetailsPage() {
           <>
             <Header />
             <h1>Location Details</h1>
-            {/* <div>
-              <p>Name: {locationDetails.name}</p>
-              <p>Address: {locationDetails.address}</p>
-              <p>Phone: {locationDetails.phone}</p>
-            </div> */}
             <LocationCard location={locationDetails}/>
             {errors.map((err) => (
               <p key={err} style={{ color: "red" }}>
