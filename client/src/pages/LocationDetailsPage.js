@@ -1,77 +1,61 @@
 import React, { useEffect, useState } from "react";
-import NewReportForm from "../components/NewReportForm";
 import LocationList from "../components/LocationList"
-import LocationForm from "../components/LocationForm";
+import Header from "../components/Header"
 
-function LocationDetailsPage({id}) {
-    const [locationDetails, setLocationDetails] = useState({});
-    const [reports, setReports] = useState([])
-    const [errors, setErrors] = useState([])
-    const [confirmationMessage, setConfirmationMessage] = useState("");
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            const response = await fetch(`/locations/${id}`);
-            if (response.ok) {
-              const data = await response.json();
-              setLocationDetails(data.location);
-              setReports(data.reports);
-            } else{
-                const errorMessages = await response.json();
-                setErrors(errorMessages.errors)
-            }
-        };
-        fetchData();
-    }, [id]);
 
-    useEffect(() => {
-        const fetchReports = async () => {
-          const response = await fetch("/reports");
-          if (response.ok) {
-            const data = await response.json();
-            setReports(data);
-          } else {
-                const errorMessages = await response.json();
-                setErrors(errorMessages.errors)
-            }
+function LocationDetailsPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [locationDetails, setLocationDetails] = useState({});
+  const [errors, setErrors] = useState([])
+  
+  const id = 1;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      console.log("Fetching data...")
+      const response = await fetch(`/locations/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Data received:", data)
+          if (data && data) { // Check that data is available before setting state
+            setLocationDetails(data);
+          }
+
+        } else {
+          const errorMessages = await response.json();
+          console.group("Error received:", errorMessages)
+          setErrors(errorMessages.errors)
         }
-        fetchReports();
-      }, []);
+      setIsLoading(false)
+    };
+    fetchData();
+  }, [id]);
+
     
-
-    const handleNewReport = (newReport) => {
-        setReports([...reports, newReport]);
-        setConfirmationMessage("Report submitted successfully!");
-      };
-
-    return (
-        <div>
+  return (
+      <div>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <Header />
             <h1>Location Details</h1>
             <div>
-            <p>insert location details here</p>
+              <p>Name: {locationDetails.name}</p>
+              <p>Address: {locationDetails.address}</p>
+              <p>Phone: {locationDetails.phone}</p>
             </div>
-    
-            <div>{confirmationMessage}</div>
-            
-            <h2>Existing Reports</h2>
-            <ul>
-            {reports.map((report, index) => (
-                <li key={index}>
-                <p>insert report details here</p>
-                </li>
-            ))}
-            </ul>
-    
-            <h2>Submit a New Report</h2>
-        <NewReportForm handleNewReport={handleNewReport} />
-
-        {errors.map((err) => (
-                <p key={err} style={{ color: "red" }}>
+            {errors.map((err) => (
+              <p key={err} style={{ color: "red" }}>
                 {err}
-                </p>
+              </p>
             ))}
+          </>
+        )}
       </div>
-    );
+  );
+
 };
 
 

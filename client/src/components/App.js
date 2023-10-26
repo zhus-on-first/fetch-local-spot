@@ -6,6 +6,7 @@ import HomePage from "../pages/HomePage";
 import FindHikePage from "../pages/FindHikePage";
 import FindRidePage from "../pages/FindRidePage";
 import FindFoodPage from "../pages/FindFoodPage";
+import LocationDetailsPage from "../pages/LocationDetailsPage";
 
 
 function App() {
@@ -28,6 +29,9 @@ function App() {
         </Route>
         <Route path="/locations/find-a-food-spot">
           <FindFoodPage />
+        </Route>
+        <Route path="/locations/:id" >
+          <LocationDetailsPage />
         </Route>
       </Switch>
     </Router>
