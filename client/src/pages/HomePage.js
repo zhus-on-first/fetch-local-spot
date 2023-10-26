@@ -17,6 +17,6 @@ function HomePage() {
         <LocationList />
     </div>
   );
-}
+};
 
 export default HomePage;

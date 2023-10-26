@@ -7,7 +7,7 @@ function FindHike() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("http://127.0.0.1:5555/locations/find-a-hike");
+                const response = await fetch("/locations/find-a-hike");
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }

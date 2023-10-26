@@ -35,7 +35,7 @@ function NewReportForm({handleNewReport}){
           }
 
           // Fetch features
-          const featureResponse = await fetch("/locations");
+          const featureResponse = await fetch("/features");
           if (featureResponse.ok){
             const featureData = await featureResponse.json();
             setFormData(prev => ({ ...prev, features: featureData}))
@@ -48,26 +48,7 @@ function NewReportForm({handleNewReport}){
         fetchData();
       }, []);
 
-    //   // Fetch location features by location_id
-    //   const [selectedLocation, setSelectedLocation] = useState("")
 
-    //   useEffect(() => {
-    //     const fetchFeatures = async () => {
-    //         console.log("Selected Location:", selectedLocation);
-    //         if (selectedLocation) {
-    //             const featureResponse = await fetch(`/location/<int:location_id>/features`)
-    //             if (featureResponse.ok) {
-    //                 const featureData = await featureResponse.json()
-    //                 setFormData(prev => ({ ...prev, features: featureData}))
-    //             } else {
-    //                 const errorMessages = await featureResponse.json();
-    //                 setErrors(errorMessages.errors);
-    //             }
-    //         }
-    //     }
-    //     fetchFeatures()
-    //   }, [selectedLocation])
-    
 
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
@@ -98,7 +79,6 @@ function NewReportForm({handleNewReport}){
                 if (response.ok) {
                     const newReport = await response.json();
                     handleNewReport(newReport)
-                    setFormData({formData})
                     setErrors([]);
                     formik.resetForm()
                 } else{
@@ -139,8 +119,9 @@ function NewReportForm({handleNewReport}){
             {/* show all possible features */}
             <div>
             <label>Reported Features</label>
-            {formData.features && formData.features.map((feature, index) => (
-                <div key={index}>
+            {/* {formData.features && formData.features.map((feature, index) => (
+
+                <div key={feature.id}>
                     <input 
                         type="checkbox"
                         name="reported_features"
@@ -149,7 +130,24 @@ function NewReportForm({handleNewReport}){
                     />
                     <label>{feature.feature}</label>
                 </div>
-            ))}
+            ))} */}
+
+            {formData.features && formData.features.map((feature) => {
+            // Log current feature object to see structure
+                console.log("Current feature:", feature);
+
+                return (
+                    <div key={feature.id}>
+                        <input 
+                            type="checkbox"
+                            name="reported_features"
+                            value={feature.id}
+                            onChange={formik.handleChange}
+                        />
+                        <label>{feature.id}: {feature.name}</label>
+                    </div>
+                );
+            })}
             </div>
 
             {/* logic to upload photos */}
@@ -177,3 +175,13 @@ function NewReportForm({handleNewReport}){
 }
 
 export default NewReportForm;
+
+
+// What a POST object looks like
+// {
+//     "user_id": 1,
+//     "location_id": 2,
+//     "reported_features": [1, 3, 4],
+//     "photo_url": "http://www.photo.com/1.jpg",
+//     "comment": "Great place!"
+//   }

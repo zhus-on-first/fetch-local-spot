@@ -7,7 +7,7 @@ function FindRide() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5555/locations/find-a-ride");
+        const response = await fetch("/locations/find-a-ride");
         if (!response.ok) {
           throw new Error("Network response error");
         }

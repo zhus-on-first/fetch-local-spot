@@ -11,7 +11,7 @@ function LocationDetailsPage({id}) {
     
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(`http://localhost:5555/locations/${id}`);
+            const response = await fetch(`/locations/${id}`);
             if (response.ok) {
               const data = await response.json();
               setLocationDetails(data.location);
@@ -26,7 +26,7 @@ function LocationDetailsPage({id}) {
 
     useEffect(() => {
         const fetchReports = async () => {
-          const response = await fetch("http://localhost:5555/reports");
+          const response = await fetch("/reports");
           if (response.ok) {
             const data = await response.json();
             setReports(data);
