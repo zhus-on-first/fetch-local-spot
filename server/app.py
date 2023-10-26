@@ -42,7 +42,8 @@ class LocationList(Resource): # List all locations and useful into
         locations = [
             {**location.to_dict(), 
              "location_type_name": location.location_type_name,
-             "feature_names": [location_feature.feature_name for location_feature in location.location_features]
+             "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
+             "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
              } 
             for location in Location.query.all()]
         return locations, 200

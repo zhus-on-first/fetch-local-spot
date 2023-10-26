@@ -45,6 +45,9 @@ class Report(db.Model, SerializerMixin):
     # A report has a/belongs to a location
     location = db.relationship("Location", back_populates="reports")
 
+    # A report has many reported feature names through reported features
+    reported_features_names = association_proxy("reported_features", "feature_name")
+
     # Serialization
     serialize_rules = ("-reported_features", "-reported_photos", "-user", "-location")
 
@@ -91,8 +94,11 @@ class Location(db.Model, SerializerMixin):
     # A location has many photos through reports
     location_photos = association_proxy("reports", "reported_photos")
 
-    # A location has many reported features through reports
-    reported_features = association_proxy("reports", "reported_features")
+    # A location has many location feature names through LocationFeatures
+    location_feature_names = association_proxy("location_features", "feature_name")
+
+    # A location has many reported features names through reports
+    reported_features_names = association_proxy("reports", "reported_features_names")
 
     # Serialization
     serialize_rules = ("-reports", "-location_type", "-location_features")
@@ -164,6 +170,9 @@ class ReportedFeature(db.Model, SerializerMixin):
 
     # A reported_feature references a feature
     feature = db.relationship("Feature", back_populates="reported_features")
+
+    # A Reported_Feature has a name through Feature
+    feature_name = association_proxy("feature", "name")
 
     # Serialization
     serialize_rules = ("-report", "-feature")
