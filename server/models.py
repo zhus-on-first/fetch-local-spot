@@ -88,8 +88,11 @@ class Location(db.Model, SerializerMixin):
     # A location has a location name through location_types
     location_type_name = association_proxy("location_type", "name")
 
-    # A location has as many photos through reports
+    # A location has many photos through reports
     location_photos = association_proxy("reports", "reported_photos")
+
+    # A location has many reported features through reports
+    reported_features = association_proxy("reports", "reported_features")
 
     # Serialization
     serialize_rules = ("-reports", "-location_type", "-location_features")
