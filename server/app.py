@@ -10,7 +10,7 @@ from flask_restful import Resource
 from config import app, db, api
 
 # Add your model imports
-from models import User, Report, ReportedPhoto, Location, LocationType, LocationFeature, ReportedFeature
+from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
 
 # Views go here
 class Index(Resource):
@@ -33,9 +33,15 @@ class UserList(Resource):
     #     return new_user, 200
     
 api.add_resource(UserList, "/users")
-class LocationList(Resource): # List all locations
+
+class LocationList(Resource): # List all locations and useful into
     def get(self):
-        locations = [location.to_dict() for location in Location.query.all()]
+        locations = [
+            {**location.to_dict(), 
+             "location_type_name": location.location_type_name,
+             "feature_names": [location_feature.feature_name for location_feature in location.location_features]
+             } 
+            for location in Location.query.all()]
         return locations, 200
     
     def post(self):
@@ -57,7 +63,7 @@ class LocationList(Resource): # List all locations
             return {"errors": str(e)}, 400
         except Exception as e:
             db.session.rollback()
-            return {"errors": str(e)}, 400 
+            return {"errors": str(e)}, 400     
 
 api.add_resource(LocationList, "/locations")
 
@@ -78,7 +84,15 @@ class LocationByHikingType(Resource):
             .filter(LocationType.name == "hike")\
             .all()
         
-        hiking_locations_dicts = [location.to_dict() for location in hiking_locations]
+        hiking_locations_dicts = [
+            {
+                **location.to_dict(), 
+                "location_type_name": location.location_type.name,
+                "feature_names": [feature.feature_name for feature in location.location_features]
+            } 
+            for location in hiking_locations
+        ]
+
         return hiking_locations_dicts, 200
     
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
@@ -90,8 +104,15 @@ class LocationByFoodType(Resource):
             .filter(LocationType.name == "food")\
             .all()
         
-        food_locations_dict = [location.to_dict() for location in food_locations]
-        return food_locations_dict, 200
+        food_locations_dicts = [
+            {
+                **location.to_dict(), 
+                "location_type_name": location.location_type.name,  
+                "feature_names": [feature.feature_name for feature in location.location_features]
+            } 
+            for location in food_locations
+        ]
+        return food_locations_dicts, 200
     
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
@@ -102,21 +123,35 @@ class LocationByRideType(Resource):
             .filter(LocationType.name == "ride")\
             .all()
         
-        ride_locations_dict = [location.to_dict() for location in ride_locations]
-        return ride_locations_dict, 200
+        ride_locations_dicts = [
+            {
+                **location.to_dict(), 
+                "location_type_name": location.location_type.name,
+                "feature_names": [feature.feature_name for feature in location.location_features]
+            } 
+            for location in ride_locations
+        ]
+        return ride_locations_dicts, 200
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
+class FeatureList(Resource):
+    def get(self):
+        features = [feature.to_dict() for feature in Feature.query.all()]
+        return features, 200
+    
+api.add_resource(FeatureList, "/features")
 class LocationFeaturesByLocationId(Resource):
     def get(self, location_id):
         location_features = [
-            feature.to_dict() for feature 
+            {**feature.to_dict(), "feature_name": feature.feature_name} for feature 
             in LocationFeature.query.filter_by(location_id=location_id).all()
             ]
-        
+            
         return location_features, 200
     
 api.add_resource(LocationFeaturesByLocationId, "/locations/<int:location_id>/features")
+
 class ReportList(Resource):
     def get(self):
         reports = [report.to_dict() for report in Report.query.all()]
@@ -132,9 +167,9 @@ class ReportList(Resource):
                 comment = data.get("comment")
             )
             db.session.add(new_report)
-            db.session.flush()
+            db.session.flush() # To ensure it gets an ID fore photo to reference
 
-            for photo_url in data.get("photos", []):
+            for photo_url in data.get("photo_urls", []):
                 new_photo = ReportedPhoto(
                     report_id=new_report.id,
                     photo_url=photo_url
@@ -142,30 +177,12 @@ class ReportList(Resource):
                 db.session.add(new_photo)
 
             # Handle Features
-            # For each feature, set the LocationFeature. 
-            # Match to its corresponding location_feature_id in ReportedFeature
-            # Then insert it into the ReportedFeature table, linked to the new report's ID.
-
-            for feature_name in data["features"]:
-                # Check if feature already exists for this location
-                location_feature = LocationFeature.query.filter_by(
-                    location_id=new_report.location_id, feature=feature_name
-                    ).first()
-                
-                # If feature name doesn't exist, create a new entry
-                if location_feature is None:
-                    location_feature = LocationFeature( # 1. Lookup the corresponding location_feature_id
-                        location_id=new_report.location_id, feature=feature_name
-                    )
-                    db.session.add(location_feature)
-                    db.session.flush()
-
-                # Create new ReportFeature entry to link LocationFeature to Report
-                report_location_new_feature = ReportedFeature(    
+            for feature_id in data.get("reported_features", []):
+                reported_feature = ReportedFeature(    
                     report_id=new_report.id,
-                    location_feature_id=location_feature.id # 2. Set it in the ReportFeature table
+                    feature_id=feature_id
                 )
-                db.session.add(report_location_new_feature)
+                db.session.add(reported_feature)
                             
             db.session.commit()
             return new_report.to_dict(), 201
@@ -209,46 +226,6 @@ class ReportById(Resource):
             db.session.commit()
             return {"message": "Report deleted"}, 200
         
-# class ReportByLocationId(Resource): # Reports for individual locations
-#     def get(self, location_id):
-#         reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
-#         return reports, 200
-
-#     def patch(self, location_id):
-#         report = Report.query.get(location_id)
-
-#         if report is None:
-#             return {"message": "Location not found"}, 404
-#         else:
-#             try:
-#                 for attr in request.json:
-#                     setattr(report, attr, request.json.get(attr))
-
-#                 db.session.add(report)
-#                 db.session.commit()
-#                 return report.to_dict("-reported_features", "-reported_photos", "-user", "-location"), 200
-
-#             except ValueError as e:
-#                 db.session.rollback()
-#                 return {"errors": str(e)}, 400
-#             except Exception as e:
-#                 return {"errors": str(e)}, 400                
-        
-#     def delete(self, location_id):
-#         report = Report.query.get(location_id)
-
-#         if report is None:
-#             return {"message": "Location not found"}, 404
-#         else:
-#             try:
-#                 db.session.delete(report)
-#                 db.session.commit()
-#                 return {"message": "Report deleted successfully"}, 200
-#             except Exception as e:
-#                 db.session.rollback()
-#                 return {"errors": str(e)}, 400
-            
-# api.add_resource(ReportByLocationId, "/reports/<int:location_id>")
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)

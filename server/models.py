@@ -92,7 +92,7 @@ class Location(db.Model, SerializerMixin):
     location_photos = association_proxy("reports", "reported_photos")
 
     # Serialization
-    serialize_rules = ("-reports", "-location_type")
+    serialize_rules = ("-reports", "-location_type", "-location_features")
 
     def __repr__(self):
         return f"<Location(id={self.id}: name={self.name}, address={self.address}, phone={self.phone}, location_type_id={self.location_type_id})>"
@@ -124,6 +124,9 @@ class Feature(db.Model, SerializerMixin):
     # A feature is referenced by many reported_features
     reported_features = db.relationship("ReportedFeature", back_populates="feature")
 
+    # Serialize
+    serialize_rules = ("-location_features", "-reported_features")
+
 class LocationFeature(db.Model, SerializerMixin):
     __tablename__ = "location_features"
 
@@ -136,6 +139,9 @@ class LocationFeature(db.Model, SerializerMixin):
 
     # A location_feature references a feature
     feature = db.relationship("Feature", back_populates="location_features")
+
+    # A location_feature has a name through feature
+    feature_name = association_proxy("feature", "name")
 
     # Serialization
     serialize_rules = ("-location", "-feature")
