@@ -90,7 +90,7 @@ function NewReportForm({handleNewReport}){
 
     return (
         <form onSubmit={formik.handleSubmit}>
-            {/* show dropdown of available user name ids based on initial database fetch */}
+            {/* Show dropdown of available user name ids based on initial database fetch */}
             <div>
                 <label>Name ID</label> 
                 <select
@@ -103,7 +103,7 @@ function NewReportForm({handleNewReport}){
                 </select>
             </div>
 
-            {/* show dropdown of available location ids based on initial database fetch */}
+            {/* Show dropdown of available location ids based on initial database fetch */}
             <div>
                 <label>Location ID</label>
                 <select
@@ -116,7 +116,7 @@ function NewReportForm({handleNewReport}){
                 </select>
             </div>
 
-            {/* show all possible features */}
+            {/* Show all possible features */}
             <div>
             <label>Reported Features</label>
             {/* {formData.features && formData.features.map((feature, index) => (
@@ -150,7 +150,10 @@ function NewReportForm({handleNewReport}){
             })}
             </div>
 
-            {/* logic to upload photos */}
+            {/* Upload photos */}
+            <div>
+                <label>Upload Photos:</label>
+            </div>
 
             <div>
                 <label>Comment</label>
