@@ -1,12 +1,12 @@
 import React from "react";
 
 function ReportsByLocationId({ reports }) {
-    console.log("Reports array:", reports);
+    console.log("Reports by location array:", reports);
     
     return (
         <div>
-          {reports.map((report, id) => (
-            <div key={id}>
+          {reports.map((report) => (
+            <div key={report.id}>
               <h4>Report ID: {report.id}</h4>
               <p>User ID: {report.user_id}</p>
               <p>Location ID: {report.location_id}</p>
