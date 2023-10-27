@@ -6,14 +6,14 @@ function LocationCard({ location }) {
     
     // Render each location feature's name from strings array
     const featureNamesList = location.location_feature_names 
-    ? location.location_feature_names.map((location_feature_name, id) => {
-        return <li key={id}>{location_feature_name}</li>;
+    ? location.location_feature_names.map((location_feature_name) => {
+        return <li key={location.id}>{location_feature_name}</li>;
         }) : "No location features available";
     
-    // Fender each reported features' name from array of strings
+    // Render each reported features' name from array of strings
     const reportedFeaturesList = location.reported_features_names
-    ? location.reported_features_names.map((reported_features_name, id) => {
-        return <li key={id}>{reported_features_name}</li>;
+    ? location.reported_features_names.map((reported_features_name) => {
+        return <li key={location.id}>{reported_features_name}</li>;
         }) : "No reported features available";
         
     return (

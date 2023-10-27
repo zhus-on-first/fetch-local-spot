@@ -6,7 +6,6 @@ function Footer() {
         <header>
             <div className="logo-container">
                 <h1>Footer</h1>
-                <h2>Sniff. Sit. Stay. Visit.</h2>
             </div>
         </header>
     )

@@ -40,14 +40,17 @@ api.add_resource(UserList, "/users")
 class LocationList(Resource): # List all locations and useful into
     def get(self):
         locations = [
-            {**location.to_dict(), 
-             "location_type_name": location.location_type_name,
-             "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
-             "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
-             } 
-            for location in Location.query.all()]
+            {
+                **location.to_dict(), 
+                "location_type_name": location.location_type_name,
+                "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
+                "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
+            } 
+            for location in Location.query.all()
+        ]
+        
         return locations, 200
-    
+
     def post(self):
         print("Received POST request")
         try:
@@ -77,11 +80,12 @@ class LocationById(Resource):
         if location is None:
             return {"error": "Location not found"}, 404
         else:
-            location_to_dict = {**location.to_dict(), 
-             "location_type_name": location.location_type_name,
-             "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
-             "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
-             } 
+            location_to_dict = {
+                **location.to_dict(), 
+                "location_type_name": location.location_type_name,
+                "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
+                "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
+            } 
             return location_to_dict, 200
     
 api.add_resource(LocationById, "/locations/<int:id>")
@@ -150,16 +154,30 @@ class FeatureList(Resource):
         return features, 200
     
 api.add_resource(FeatureList, "/features")
+
 class LocationFeaturesByLocationId(Resource):
     def get(self, location_id):
         location_features = [
-            {**feature.to_dict(), 
-             "feature_name": feature.feature_name
-             } for feature 
-            in LocationFeature.query.filter_by(location_id=location_id).all()
-            ]
-            
+            {
+                **feature.to_dict(), 
+                "feature_name": feature.feature_name
+            } 
+            for feature in LocationFeature.query.filter_by(location_id=location_id).all()
+        ]
+
         return location_features, 200
+    
+# SAME AS ABOVE
+# class LocationFeaturesByLocationId(Resource): 
+#     def get(self, location_id):
+#         location_features = []
+        
+#         for feature in LocationFeature.query.filter_by(location_id=location_id).all():
+#             feature_dict = feature.to_dict(rules=("feature.name",))
+#             feature_dict["feature_name"] = feature.feature_name
+#             location_features.append(feature_dict)
+
+#         return location_features, 200
     
 api.add_resource(LocationFeaturesByLocationId, "/locations/<int:location_id>/features")
 
@@ -253,15 +271,36 @@ class ReportById(Resource):
 class ReportsByLocation(Resource):
     def get(self, location_id):
         try:
-            reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+            # reports = [
+            #     {
+            #         **report.to_dict(), 
+            #         "username": report.user.username if report.user else None, # Some reports have no users due to early Report Post API testing
+            #         "reported_features_names": [feature.feature_name for feature in report.reported_features],
+            #         "photos": [reported_photo.photo_url for reported_photo in report.reported_photos] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
+            #     }
+            #     for report in Report.query.filter_by(location_id=location_id).all()
+            # ]
 
-            if len(reports) == 0:
-                return {"message": "No reports found for this location_id"}, 404
+            reports = [
+                {
+                    **report.to_dict(), 
+                    "username": report.user.username if report.user else None, # Some reports have no users due to early Report Post API testing
+                    "reported_features_names": [feature.feature_name for feature in report.reported_features],
+                    "photos": [
+                        {
+                            "id": reported_photo.id, 
+                            "photo_url": reported_photo.photo_url
+                        } 
+                        for reported_photo in report.reported_photos
+                        ] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
+                }
+                for report in Report.query.filter_by(location_id=location_id).all()
+            ]
 
             return reports, 200
         except Exception as e:
             return {"error": str(e)}, 400
-    
+        
 api.add_resource(ReportsByLocation, "/reports/location/<int:location_id>")
 
 if __name__ == "__main__":

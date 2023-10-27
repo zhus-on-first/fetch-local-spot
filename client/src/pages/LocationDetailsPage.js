@@ -59,7 +59,7 @@ function LocationDetailsPage() {
           <h1>Location Details</h1>
           <LocationCard location={locationDetails} />
           <div>
-          <h2>Reports</h2>
+          <h2>Reports for this location</h2>
           <ReportsByLocationId reports={reportsDetails} />
           </div>
           <Footer />
