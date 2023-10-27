@@ -13,10 +13,13 @@ function ReportsByLocationId({ reports }) {
               <p>User Name: {report.username}</p>
               <p>User's Reported Features: {report.reported_features_names}</p>
               <p>Comment: {report.comment}</p>
-              <p>Photos: {report.photos.map((photo) => (
-                <img key={photo.id} src={photo.photo_url} alt="Reported photos"></img>
-                ))}
-              </p>
+              <p>Photos: {
+                report.photos ?
+                  report.photos.map((photo) => (
+                    <img key={photo.id} src={photo.photo_url} alt="Reported photos"></img>
+                ))
+                : "No photos available"
+                }</p>
             </div>
           ))}
         </div>
