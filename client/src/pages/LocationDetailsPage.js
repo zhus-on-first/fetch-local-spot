@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
-import ReportCard from "../components/ReportCard";
 import LocationCard from "../components/LocationCard";
+import ReportsByLocationId from "../components/ReportsByLocationId";
 import Footer from "../components/Footer";
 
 function LocationDetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [locationDetails, setLocationDetails] = useState({});
-  const [reportDetails, setReportDetails] = useState([]);
+  const [reportsDetails, setReportsDetails] = useState([]);
   const [errors, setErrors] = useState([]);
 
   const id = 1;
@@ -15,10 +15,10 @@ function LocationDetailsPage() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      console.log("Fetching data...");
 
       // Fetch location details by location id
       const locationResponse = await fetch(`/locations/${id}`);
+      console.log("Fetching location data...");
       if (locationResponse.ok) {
         const data = await locationResponse.json();
         console.log("Location data received:", data);
@@ -31,13 +31,14 @@ function LocationDetailsPage() {
       }
 
       // Fetch reports by location id
-        const reportResponse = await fetch(`/reports/location/${id}`);
-        if (reportResponse.ok) {
-          const data = await reportResponse.json();
+        const reportsResponses = await fetch(`/reports/location/${id}`);
+        console.log("Fetching report by location data...");
+        if (reportsResponses.ok) {
+          const data = await reportsResponses.json();
           console.log("Reports data received:", data);
-          setReportDetails(data);
+          setReportsDetails(data);
         } else {
-          const errorMessages = await reportResponse.json();
+          const errorMessages = await reportsResponses.json();
           console.group("Error received:", errorMessages);
           setErrors(errorMessages.errors);
         }
@@ -59,7 +60,7 @@ function LocationDetailsPage() {
           <LocationCard location={locationDetails} />
           <div>
           <h2>Reports</h2>
-          <ReportCard report={reportDetails} />
+          <ReportsByLocationId reports={reportsDetails} />
           </div>
           <Footer />
           {errors.map((err) => (
