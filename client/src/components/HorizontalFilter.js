@@ -7,7 +7,6 @@ function HorizontalFilter() {
             <Link to="/locations/find-a-hike">Find a Hike</Link> |
             <Link to="/locations/find-a-food-spot">Find a Food Spot</Link> |
             <Link to="/locations/find-a-ride">Find a Ride</Link> |
-            <Link to="/post-report">Post a Report</Link> |
             <Link to="/locations/1">Location1 Details</Link> |
         </div>
     )
