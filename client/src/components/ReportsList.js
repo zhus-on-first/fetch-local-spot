@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import LocationCard from "./LocationCard";
+import ReportCard from "./ReportCard";
 
-function LocationList() {
-    const [locations, setLocations] = useState([]);
+function ReportList() {
+    const [reports, setReports] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("/locations");
+                const response = await fetch("/reports");
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
                 const apiData = await response.json();
                 console.log(apiData)
-                setLocations(apiData);
+                setReports(apiData);
             } catch (error) {
                 console.error("There was a problem with the fetch:", error)
             }
@@ -23,21 +23,21 @@ function LocationList() {
 
     return (
         <div>
-            {/* {locations.map((location) => (
-                <LocationCard key={location.id} location={location} />
+            {/* {reports.map((report) => (
+                <reportCard key={report.id} report={report} />
             ))} */}
 
-            {locations.map((location) => {
-                console.log("Current location:", location);
+            {reports.map((report) => {
+                console.log("Current report:", report);
                 return (
-                <LocationCard 
-                key={location.id} 
-                location={location} 
+                <ReportCard 
+                key={report.id} 
+                report={report} 
                 />)
             }
-            )}
+            )})
         </div>
     );
 }
 
-export default LocationList;
+export default ReportList;

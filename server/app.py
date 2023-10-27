@@ -77,7 +77,12 @@ class LocationById(Resource):
         if location is None:
             return {"error": "Location not found"}, 404
         else:
-            return location.to_dict(), 200
+            location_to_dict = {**location.to_dict(), 
+             "location_type_name": location.location_type_name,
+             "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
+             "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
+             } 
+            return location_to_dict, 200
     
 api.add_resource(LocationById, "/locations/<int:id>")
 
@@ -245,6 +250,19 @@ class ReportById(Resource):
             db.session.commit()
             return {"message": "Report deleted"}, 200
         
+class ReportsByLocation(Resource):
+    def get(self, location_id):
+        try:
+            reports = [report.to_dict() for report in Report.query.filter_by(location_id=location_id).all()]
+
+            if len(reports) == 0:
+                return {"message": "No reports found for this location_id"}, 404
+
+            return reports, 200
+        except Exception as e:
+            return {"error": str(e)}, 400
+    
+api.add_resource(ReportsByLocation, "/reports/location/<int:location_id>")
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
