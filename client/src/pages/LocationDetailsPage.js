@@ -1,78 +1,77 @@
 import React, { useEffect, useState } from "react";
-import NewReportForm from "../components/NewReportForm";
-import LocationList from "../components/LocationList"
-import LocationForm from "../components/LocationForm";
+import Header from "../components/Header";
+import LocationCard from "../components/LocationCard";
+import ReportsByLocationId from "../components/ReportsByLocationId";
+import Footer from "../components/Footer";
 
-function LocationDetailsPage({id}) {
-    const [locationDetails, setLocationDetails] = useState({});
-    const [reports, setReports] = useState([])
-    const [errors, setErrors] = useState([])
-    const [confirmationMessage, setConfirmationMessage] = useState("");
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            const response = await fetch(`/locations/${id}`);
-            if (response.ok) {
-              const data = await response.json();
-              setLocationDetails(data.location);
-              setReports(data.reports);
-            } else{
-                const errorMessages = await response.json();
-                setErrors(errorMessages.errors)
-            }
-        };
-        fetchData();
-    }, [id]);
+function LocationDetailsPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationDetails, setLocationDetails] = useState({});
+  const [reportsDetails, setReportsDetails] = useState([]);
+  const [errors, setErrors] = useState([]);
 
-    useEffect(() => {
-        const fetchReports = async () => {
-          const response = await fetch("/reports");
-          if (response.ok) {
-            const data = await response.json();
-            setReports(data);
-          } else {
-                const errorMessages = await response.json();
-                setErrors(errorMessages.errors)
-            }
+  const id = 1;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      // Fetch location details by location id
+      const locationResponse = await fetch(`/locations/${id}`);
+      console.log("Fetching location data...");
+      if (locationResponse.ok) {
+        const data = await locationResponse.json();
+        console.log("Location data received:", data);
+        if (data) {
+          setLocationDetails(data);
         }
-        fetchReports();
-      }, []);
-    
+      } else {
+        const errorMessages = await locationResponse.json();
+        setErrors(errorMessages.errors);
+      }
 
-    const handleNewReport = (newReport) => {
-        setReports([...reports, newReport]);
-        setConfirmationMessage("Report submitted successfully!");
-      };
+      // Fetch reports by location id
+        const reportsResponses = await fetch(`/reports/location/${id}`);
+        console.log("Fetching report by location data...");
+        if (reportsResponses.ok) {
+          const data = await reportsResponses.json();
+          console.log("Reports data received:", data);
+          setReportsDetails(data);
+        } else {
+          const errorMessages = await reportsResponses.json();
+          console.group("Error received:", errorMessages);
+          setErrors(errorMessages.errors);
+        }
 
-    return (
-        <div>
-            <h1>Location Details</h1>
-            <div>
-            <p>insert location details here</p>
-            </div>
-    
-            <div>{confirmationMessage}</div>
-            
-            <h2>Existing Reports</h2>
-            <ul>
-            {reports.map((report, index) => (
-                <li key={index}>
-                <p>insert report details here</p>
-                </li>
-            ))}
-            </ul>
-    
-            <h2>Submit a New Report</h2>
-        <NewReportForm handleNewReport={handleNewReport} />
+      setIsLoading(false);
+    };
 
-        {errors.map((err) => (
-                <p key={err} style={{ color: "red" }}>
-                {err}
-                </p>
-            ))}
-      </div>
-    );
-};
+    fetchData();
+  }, [id]);
 
+  return (
+    <div>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <Header />
+          <h1>Location Details</h1>
+          <LocationCard location={locationDetails} />
+          <div>
+          <h2>Reports for this location</h2>
+          <ReportsByLocationId reports={reportsDetails} />
+          </div>
+          <Footer />
+          {errors.map((err) => (
+            <p key={err} style={{ color: "red" }}>
+              {err}
+            </p>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
 
 export default LocationDetailsPage;

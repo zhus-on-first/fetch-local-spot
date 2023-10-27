@@ -4,13 +4,18 @@ import React from "react";
 function LocationCard({ location }) {
     console.log("Location object:", location);
     
-    const featureNamesList = location.location_feature_names.map((location_feature_name, index) => {
-        return <li key={index}>{location_feature_name}</li>;
-    });
-
-    const reportedFeaturesList = location.reported_features_names.map((reported_features_name, index) => {
-        return <li key={index}>{reported_features_name}</li>;
-    });
+    // Render each location feature's name from strings array
+    const featureNamesList = location.location_feature_names 
+    ? location.location_feature_names.map((lfn) => {
+        return <li key={lfn.id}>{lfn.location_feature_name}</li>;
+        }) : "No location features available";
+    
+    // Render each reported features' name from array of strings
+    const reportedFeaturesList = location.reported_features_names
+    ? location.reported_features_names.map((rfn) => {
+        return <li key={rfn.id}>{rfn.reported_feature_name}</li>;
+        }) : "No reported features available";
+        
     return (
         <div>
             <h3>Location ID {location.id}: {location.name}</h3>
