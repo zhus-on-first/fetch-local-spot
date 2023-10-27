@@ -2,7 +2,7 @@ import React from "react";
 
 
 function LocationCard({ location }) {
-    console.log("Location object:", location);
+    console.log("Location Card object:", location);
     
     // Render each location feature's name from strings array
     const featureNamesList = location.location_feature_names 

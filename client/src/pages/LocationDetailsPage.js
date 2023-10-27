@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom/";
+
+// Local imports
 import Header from "../components/Header";
 import LocationCard from "../components/LocationCard";
 import ReportsByLocationId from "../components/ReportsByLocationId";
 import Footer from "../components/Footer";
 
+
 function LocationDetailsPage() {
+  const { id } = useParams()
   const [isLoading, setIsLoading] = useState(false);
   const [locationDetails, setLocationDetails] = useState({});
   const [reportsDetails, setReportsDetails] = useState([]);
   const [errors, setErrors] = useState([]);
 
-  const id = 1;
+  // const id = 1;
 
   useEffect(() => {
     const fetchData = async () => {

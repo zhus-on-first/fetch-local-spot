@@ -294,20 +294,15 @@ class ReportById(Resource):
 class ReportsByLocation(Resource):
     def get(self, location_id):
         try:
-            # reports = [
-            #     {
-            #         **report.to_dict(), 
-            #         "username": report.user.username if report.user else None, # Some reports have no users due to early Report Post API testing
-            #         "reported_features_names": [feature.feature_name for feature in report.reported_features],
-            #         "photos": [reported_photo.photo_url for reported_photo in report.reported_photos] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
-            #     }
-            #     for report in Report.query.filter_by(location_id=location_id).all()
-            # ]
+            print(f"Querying reports for location_id = {location_id}")
+
+            query_result = Report.query.filter_by(location_id=location_id).all()
+            print(f"Query Result: {query_result}")
 
             reports = [
                 {
                     **report.to_dict(), 
-                    "username": report.user.username if report.user else None, # Some reports have no users due to early Report Post API testing
+                    "username": report.user.username if report.user else None,
                     "reported_features_names": [feature.feature_name for feature in report.reported_features],
                     "photos": [
                         {
@@ -315,15 +310,16 @@ class ReportsByLocation(Resource):
                             "photo_url": reported_photo.photo_url
                         } 
                         for reported_photo in report.reported_photos
-                        ] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
+                    ] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
                 }
-                for report in Report.query.filter_by(location_id=location_id).all()
+                for report in query_result
             ]
+            print(f"Reports: {reports}")
 
             return reports, 200
         except Exception as e:
             return {"error": str(e)}, 400
-        
+
 api.add_resource(ReportsByLocation, "/reports/location/<int:location_id>")
 
 if __name__ == "__main__":

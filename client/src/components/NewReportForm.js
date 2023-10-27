@@ -14,6 +14,7 @@ function NewReportForm({handleNewReport}){
 
     useEffect(() => {
         const fetchData = async () => {
+            
           // Fetch locations
           const locationResponse = await fetch("/locations");
           if (locationResponse.ok){

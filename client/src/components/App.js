@@ -30,7 +30,7 @@ function App() {
         <Route path="/locations/find-a-food-spot">
           <FindFoodPage />
         </Route>
-        <Route path="/locations/:id" >
+        <Route path="/locations/:id">
           <LocationDetailsPage />
         </Route>
       </Switch>
