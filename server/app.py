@@ -92,11 +92,7 @@ class LocationById(Resource):
             return {"error": "Location not found"}, 404
         else:
             location_to_dict = {
-                # **location.to_dict(), 
-                # "location_type_name": location.location_type_name,
-                # "location_feature_names": [location_feature.feature_name for location_feature in location.location_features],
-                # "reported_features_names": [reported_feature.feature.name for report in location.reports for reported_feature in report.reported_features]
-                
+
                 **location.to_dict(), 
                 "location_type_name": location.location_type_name,
                 "location_feature_names": [
@@ -114,28 +110,6 @@ class LocationById(Resource):
                      for report in location.reports for reported_feature in report.reported_features]
             } 
             return location_to_dict, 200
-        
-
-        #     locations = [
-        #     {
-        #         **location.to_dict(), 
-        #         "location_type_name": location.location_type_name,
-        #         "location_feature_names": [
-        #             {
-        #                 "id": location_feature.id,
-        #                 "location_feature_name": location_feature.feature_name
-        #             }
-        #             for location_feature in location.location_features],
-        #         "reported_features_names": [
-        #             {
-        #                 "id": reported_feature.id,
-        #                 "reported_feature_name": reported_feature.feature.name
-        #             }
-                    
-        #              for report in location.reports for reported_feature in report.reported_features]
-        #     } 
-        #     for location in Location.query.all()
-        # ]
     
 api.add_resource(LocationById, "/locations/<int:id>")
 
