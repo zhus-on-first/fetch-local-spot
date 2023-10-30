@@ -67,24 +67,25 @@ function NewReportForm({handleNewReport, toggleForm}){
         initialValues,
         validationSchema: formSchema,
         onSubmit: async (values) => {
-                const response = await fetch("/reports", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(values),
-                });
+            console.log("Form values being posted:", values)
+            const response = await fetch("/reports", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
 
-                if (response.ok) {
-                    const newReport = await response.json();
-                    handleNewReport(newReport)
-                    setErrors([]);
-                    formik.resetForm()
-                } else{
-                    const errorMessages = await response.json();
-                    setErrors(errorMessages.errors)
-                }
+            if (response.ok) {
+                const newReport = await response.json();
+                handleNewReport(newReport)
+                setErrors([]);
+                formik.resetForm()
+            } else{
+                const errorMessages = await response.json();
+                setErrors(errorMessages.errors)
             }
+        }
     })
 
     return (
@@ -149,11 +150,12 @@ function NewReportForm({handleNewReport, toggleForm}){
             })}
             </div>
 
-            {/* Upload photos */}
+            {/* Display Upload photos */}
             <div>
                 <label>Upload Photos:</label>
             </div>
 
+            {/* Display Comment */}
             <div>
                 <label>Comment</label>
                 <input

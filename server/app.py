@@ -212,6 +212,7 @@ class ReportList(Resource):
     def post(self):
         try:
             data = request.json
+            print(f"Incoming new report data: {data}")
 
             # Create new user if it doesn't exist
             user_id = data.get("user_id")
@@ -231,8 +232,10 @@ class ReportList(Resource):
                 location_id = data.get("location_id"),
                 comment = data.get("comment")
             )
+            print(f"New Report before adding to session: {new_report}")
             db.session.add(new_report)
             db.session.flush() # To ensure it gets an ID fore photo to reference
+            print(f"New Report after flush: {new_report}")
 
             for photo_url in data.get("photo_urls", []):
                 new_photo = ReportedPhoto(
