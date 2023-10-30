@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-function NewReportForm({handleNewReport, toggleForm}){
+function NewReportForm({handleNewReport, toggleForm, locationId}){
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -58,7 +58,7 @@ function NewReportForm({handleNewReport, toggleForm}){
     
     const initialValues ={
         user_id: "",
-        location_id: "",
+        location_id : locationId || "",
         reported_features: [],
         photo_url: "",
         comment: ""
@@ -105,7 +105,7 @@ function NewReportForm({handleNewReport, toggleForm}){
 
             {/* Show dropdown of available location ids based on initial database fetch */}
             <div>
-                <label>Location ID</label>
+                <label>Location ID (DO NOT change)</label>
                 <select
                     name="location_id"
                     value={formik.values.location_id}

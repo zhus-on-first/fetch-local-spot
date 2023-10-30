@@ -79,7 +79,7 @@ function LocationDetailsPage() {
 
           <h2>Add A New Report</h2>
           {!isFormVisible && <button onClick={toggleForm}>Add Your Report</button>}
-          {isFormVisible && <NewReportForm handleNewReport={handleNewReport} toggleForm={toggleForm} />}
+          {isFormVisible && <NewReportForm locationId={id} handleNewReport={handleNewReport} toggleForm={toggleForm} />}
 
           <div>
           <h2>Reports for this location</h2>
