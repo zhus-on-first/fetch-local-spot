@@ -9,12 +9,12 @@ function ReportsByLocationId({ reports }) {
             <div key={report.id}>
               <h4>Report ID: {report.id}</h4>
               <p>User ID: {report.user_id}</p>
-              <p>Location ID: {report.location_id}</p>
+              <p>Location ID (HERE JUST TO CONFIRM LOCATION): {report.location_id}</p>
               <p>User Name: {report.username}</p>
               <p>User's Reported Features: {report.reported_features_names}</p>
               <p>Comment: {report.comment}</p>
               <p>Photos: {
-                report.photos ?
+                report.photos ?,
                   report.photos.map((photo) => (
                     <img key={photo.id} src={photo.photo_url} alt="Reported photos"></img>
                 ))
