@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-function NewReportForm({handleNewReport}){
+function NewReportForm({handleNewReport, toggleForm}){
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -48,8 +48,6 @@ function NewReportForm({handleNewReport}){
         }
         fetchData();
       }, []);
-
-
 
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
@@ -173,6 +171,7 @@ function NewReportForm({handleNewReport}){
             ))}
 
         <button type="submit">Submit</button>
+        <button type="button" onClick={toggleForm}>Cancel</button>
 
         </form>
     );

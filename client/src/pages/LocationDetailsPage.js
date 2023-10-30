@@ -4,18 +4,20 @@ import { useParams } from "react-router-dom/";
 // Local imports
 import Header from "../components/Header";
 import LocationCard from "../components/LocationCard";
+import NewReportForm from "../components/NewReportForm";
 import ReportsByLocationId from "../components/ReportsByLocationId";
 import Footer from "../components/Footer";
 
 
 function LocationDetailsPage() {
   const { id } = useParams()
+  // const id = 1;
+
+  // Location Details States
   const [isLoading, setIsLoading] = useState(false);
   const [locationDetails, setLocationDetails] = useState({});
   const [reportsDetails, setReportsDetails] = useState([]);
   const [errors, setErrors] = useState([]);
-
-  // const id = 1;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +56,17 @@ function LocationDetailsPage() {
     fetchData();
   }, [id]);
 
+    // New Report Form States
+    const [isFormVisible, setIsFormVisible] = useState(false);
+
+    const toggleForm = () => {
+      setIsFormVisible(!isFormVisible);
+    };
+
+    const handleNewReport = (newReport) => {
+      setReportsDetails(prevReports => [...prevReports, newReport])
+    }
+
   return (
     <div>
       {isLoading ? (
@@ -63,11 +76,18 @@ function LocationDetailsPage() {
           <Header />
           <h1>Location Details</h1>
           <LocationCard location={locationDetails} />
+
+          <h2>Add A New Report</h2>
+          {!isFormVisible && <button onClick={toggleForm}>Add Your Report</button>}
+          {isFormVisible && <NewReportForm handleNewReport={handleNewReport} toggleForm={toggleForm} />}
+
           <div>
           <h2>Reports for this location</h2>
           <ReportsByLocationId reports={reportsDetails} />
           </div>
+
           <Footer />
+
           {errors.map((err) => (
             <p key={err} style={{ color: "red" }}>
               {err}
