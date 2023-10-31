@@ -60,7 +60,7 @@ function LocationDetailsPage() {
   // New Report Form State and Helper Functions
   const [isFormVisible, setIsFormVisible] = useState(false);
 
-  const toggleForm = () => {
+  const toggleNewReportForm = () => {
     setIsFormVisible(!isFormVisible);
   };
 
@@ -87,6 +87,28 @@ function LocationDetailsPage() {
     }
   }
 
+  // Update Report
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+
+  const toggleUpdateForm = () => {
+    setIsUpdateMode(!isUpdateMode);
+  }
+
+  const handleUpdateReport = async (updatedValues) => {
+    const response = await fetch(`/reports/${reportId}`, {
+      method: "Patch",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedValues),
+    });
+
+    if (response.ok) {
+      setIsUpdateMode(false);
+    }
+  }
+
+
   return (
     <div>
       {isLoading ? (
@@ -98,12 +120,12 @@ function LocationDetailsPage() {
           <LocationCard location={locationDetails} />
 
           <h2>Add A New Report</h2>
-          {!isFormVisible && <button onClick={toggleForm}>Add Your Report</button>}
-          {isFormVisible && <NewReportForm locationId={id} handleNewReport={handleNewReport} toggleForm={toggleForm} />}
-
+          {!isFormVisible && <button onClick={toggleNewReportForm}>Add Your Report</button>}
+          {isFormVisible && <NewReportForm locationId={id} handleNewReport={handleNewReport} />}
+         
           <div>
           <h2>Reports for this location</h2>
-          <ReportsByLocationId reports={reportsDetails} onDeleteReport={handleDeleteReport} />
+          <ReportsByLocationId reports={reportsDetails} onDeleteReport={handleDeleteReport} onUpdateReport={handleUpdateReport} toggleUpdateForm={toggleUpdateForm}/>
           </div>
 
           <Footer />
