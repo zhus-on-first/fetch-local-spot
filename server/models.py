@@ -34,10 +34,10 @@ class Report(db.Model, SerializerMixin):
     comment = db.Column(db.String(255))
 
     # A report has many reported_features
-    reported_features = db.relationship("ReportedFeature", back_populates="report")
+    reported_features = db.relationship("ReportedFeature", back_populates="report", cascade="all, delete-orphan")
 
     # A report has many reported_photos
-    reported_photos = db.relationship("ReportedPhoto", back_populates="report")
+    reported_photos = db.relationship("ReportedPhoto", back_populates="report", cascade="all, delete-orphan")
 
     # A report has a/belongs to a user
     user = db.relationship("User", back_populates="reports")
