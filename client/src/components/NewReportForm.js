@@ -119,7 +119,7 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
                     ))}
                 </select>
                 {formik.touched.user_id && formik.errors.user_id ? (
-                    <div>{formik.errors.user_id}</div>
+                    <div>{formik.errors.user_id}: Please select a user id.</div>
                 ): null}
             </div>
 
@@ -156,12 +156,19 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
             // Log current feature object to see structure
                 console.log("Current feature:", feature);
 
+            // Debug resetting checkbox
+                // console.log('Reported Features Array: ', formik.values.reported_features);
+                // console.log('Current Feature ID: ', feature.id);
+                // console.log('Is feature ID in the array?: ', formik.values.reported_features.includes(feature.id));
+
+
                 return (
                     <div key={feature.id}>
                         <input 
                             type="checkbox"
                             name="reported_features"
                             value={feature.id}
+                            checked={formik.values.reported_features.includes(String(feature.id))} // Reset checked boxes
                             onChange={formik.handleChange}
                         />
                         <label>{feature.id}: {feature.name}</label>
