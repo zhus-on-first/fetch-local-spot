@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-function NewReportForm({handleNewReport, toggleForm, locationId}){
+function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -201,7 +201,7 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
             ))}
 
         <button type="submit">Submit</button>
-        <button type="button" onClick={toggleForm}>Cancel</button>
+        <button type="button" onClick={toggleNewReportForm}>Cancel</button>
 
         {isSubmitted && <p>Your report has been successfully submitted!</p>}
 

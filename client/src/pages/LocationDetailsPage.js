@@ -57,7 +57,7 @@ function LocationDetailsPage() {
   }, [fetchData]);
 
 
-  // New Report Form State and Helper Functions
+  // Add a Report
   const [isFormVisible, setIsFormVisible] = useState(false);
 
   const toggleNewReportForm = () => {
@@ -68,6 +68,7 @@ function LocationDetailsPage() {
     setReportsDetails(prevReports => [...prevReports, newReport])
   }
 
+  // Delete Report
   const handleDeleteReport = async (reportId) => {
     try{
       console.log("Report Id for Deletion:", reportId)
@@ -88,27 +89,45 @@ function LocationDetailsPage() {
   }
 
   // Update Report
-  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [editingReport, setEditingReport] = useState(null);
+  // const [isUpdateForm, setIsUpdateForm] = useState(false)
 
-  const toggleUpdateForm = () => {
-    setIsUpdateMode(!isUpdateMode);
-  }
+  // const toggleUpdateForm = (report_id) => {
+  //   setEditingReport(report_id);
+  //   setIsUpdateForm(!isUpdateForm);
+  // }
 
-  const handleUpdateReport = async (updatedValues) => {
-    const response = await fetch(`/reports/${reportId}`, {
-      method: "Patch",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedValues),
-    });
-
-    if (response.ok) {
-      setIsUpdateMode(false);
+  const handleUpdateReport = async (updatedValues, report_id) => {
+    try {
+      const response = await fetch(`/api/reports/${report_id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedValues),
+      });
+  
+      if (response.ok) {
+        const updatedReport = await response.json();
+        setReportsDetails((prevReports) => {
+          return prevReports.map((report) => {
+            if (report.id === report_id) {
+              return updatedReport; // Replace current report in state with updated one
+            } else {
+              return report // otherwise, leave alone
+            }
+          });
+        });
+        setEditingReport(false);  // Hide the update form
+      } else {
+        const errorMessages = await response.json();
+        console.error("Failed to update report", errorMessages);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
     }
-  }
-
-
+  };
+  
   return (
     <div>
       {isLoading ? (
@@ -121,11 +140,23 @@ function LocationDetailsPage() {
 
           <h2>Add A New Report</h2>
           {!isFormVisible && <button onClick={toggleNewReportForm}>Add Your Report</button>}
-          {isFormVisible && <NewReportForm locationId={id} handleNewReport={handleNewReport} />}
+          {isFormVisible && 
+            <NewReportForm 
+              locationId={id} 
+              handleNewReport={handleNewReport} 
+              toggleNewReportForm={toggleNewReportForm}
+              />
+          }
          
           <div>
           <h2>Reports for this location</h2>
-          <ReportsByLocationId reports={reportsDetails} onDeleteReport={handleDeleteReport} onUpdateReport={handleUpdateReport} toggleUpdateForm={toggleUpdateForm}/>
+          <ReportsByLocationId 
+            reports={reportsDetails} 
+            onDeleteReport={handleDeleteReport} 
+            onUpdateReport={handleUpdateReport}
+            editingReport={editingReport}
+            setEditingReport={setEditingReport}
+          />
           </div>
 
           <Footer />
