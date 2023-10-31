@@ -108,6 +108,7 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
                     name="user_id"
                     value={formik.values.user_id}
                     onChange={formik.handleChange}>
+                    <option value="" label="Select User ID" />
                     {formData.users && formData.users.map((users, index) => (
                         <option key={index} value={users.id}>{users.id}</option>
                     ))}
