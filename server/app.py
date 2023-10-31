@@ -212,6 +212,7 @@ class ReportList(Resource):
     def post(self):
         try:
             data = request.json
+            print(f"Incoming new report data: {data}")
 
             # Create new user if it doesn't exist
             user_id = data.get("user_id")
@@ -224,15 +225,17 @@ class ReportList(Resource):
                     password = fake.password()
                     )
                 db.session.add(user)
-                db.session.flush
+                db.session.flush()
 
             new_report = Report(
                 user_id = data.get("user_id"),
                 location_id = data.get("location_id"),
                 comment = data.get("comment")
             )
+            print(f"New Report before adding to session: {new_report}")
             db.session.add(new_report)
             db.session.flush() # To ensure it gets an ID fore photo to reference
+            print(f"New Report after flush: {new_report}")
 
             for photo_url in data.get("photo_urls", []):
                 new_photo = ReportedPhoto(
@@ -262,14 +265,14 @@ api.add_resource(ReportList, "/reports")
 
 class ReportById(Resource):
     def get(self, report_id):
-        report = db.session.query(Report).filter_by(id=id).first()
+        report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:
             return {"message": "Report not found"}, 404
         else:
             return report.to_dict(), 200
     
     def patch(self, report_id):
-        report = db.session.query(Report).filter_by(id=id).first()
+        report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:
             return {"message": "Report not found"}, 404
         else:
@@ -283,15 +286,16 @@ class ReportById(Resource):
                 return {"errors": str(e)}, 400
 
     def delete(self, report_id):
-        report = db.session.query(Report).filter_by(id=id).first()
+        report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:           
             return {"message": "Report not found"}, 404
         else:
             db.session.delete(report)
             db.session.commit()
             return {"message": "Report deleted"}, 200
-        
-class ReportsByLocation(Resource):
+
+api.add_resource(ReportById, "/reports/<int:report_id>")
+class ReportsByLocationId(Resource):
     def get(self, location_id):
         try:
             print(f"Querying reports for location_id = {location_id}")
@@ -320,7 +324,7 @@ class ReportsByLocation(Resource):
         except Exception as e:
             return {"error": str(e)}, 400
 
-api.add_resource(ReportsByLocation, "/reports/location/<int:location_id>")
+api.add_resource(ReportsByLocationId, "/reports/location/<int:location_id>")
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)

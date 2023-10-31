@@ -3,12 +3,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-function NewReportForm({handleNewReport}){
+function NewReportForm({handleNewReport, toggleForm, locationId}){
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
         features: [],
     })
+
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const [errors, setErrors] = useState([])
 
@@ -49,8 +51,6 @@ function NewReportForm({handleNewReport}){
         fetchData();
       }, []);
 
-
-
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
         location_id: Yup.number().required("Required"),
@@ -60,7 +60,7 @@ function NewReportForm({handleNewReport}){
     
     const initialValues ={
         user_id: "",
-        location_id: "",
+        location_id : locationId || "",
         reported_features: [],
         photo_url: "",
         comment: ""
@@ -69,6 +69,8 @@ function NewReportForm({handleNewReport}){
         initialValues,
         validationSchema: formSchema,
         onSubmit: async (values) => {
+            console.log("Form values being posted:", values)
+            try {
                 const response = await fetch("/reports", {
                     method: "POST",
                     headers: {
@@ -81,13 +83,26 @@ function NewReportForm({handleNewReport}){
                     const newReport = await response.json();
                     handleNewReport(newReport)
                     setErrors([]);
-                    formik.resetForm()
-                } else{
+                    formik.resetForm();
+                    setIsSubmitted(true);
+                } else {
                     const errorMessages = await response.json();
                     setErrors(errorMessages.errors)
                 }
-            }
-    })
+            } catch (error) {
+                console.log("An error occurred:", error);
+                setErrors(["An unexpected error occurred"])
+            } 
+        },
+    });
+
+    useEffect(() => {
+        if (isSubmitted) {
+            setTimeout(() => {
+                setIsSubmitted(false);
+            }, 5000)
+        }
+    }, [isSubmitted]);
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -98,15 +113,19 @@ function NewReportForm({handleNewReport}){
                     name="user_id"
                     value={formik.values.user_id}
                     onChange={formik.handleChange}>
+                    <option value="" label="Select User ID" />
                     {formData.users && formData.users.map((users, index) => (
                         <option key={index} value={users.id}>{users.id}</option>
                     ))}
                 </select>
+                {formik.touched.user_id && formik.errors.user_id ? (
+                    <div>{formik.errors.user_id}: Please select a user id.</div>
+                ): null}
             </div>
 
             {/* Show dropdown of available location ids based on initial database fetch */}
             <div>
-                <label>Location ID</label>
+                <label>Location ID (DO NOT change)</label>
                 <select
                     name="location_id"
                     value={formik.values.location_id}
@@ -137,12 +156,19 @@ function NewReportForm({handleNewReport}){
             // Log current feature object to see structure
                 console.log("Current feature:", feature);
 
+            // Debug resetting checkbox
+                // console.log('Reported Features Array: ', formik.values.reported_features);
+                // console.log('Current Feature ID: ', feature.id);
+                // console.log('Is feature ID in the array?: ', formik.values.reported_features.includes(feature.id));
+
+
                 return (
                     <div key={feature.id}>
                         <input 
                             type="checkbox"
                             name="reported_features"
                             value={feature.id}
+                            checked={formik.values.reported_features.includes(String(feature.id))} // Reset checked boxes
                             onChange={formik.handleChange}
                         />
                         <label>{feature.id}: {feature.name}</label>
@@ -151,11 +177,12 @@ function NewReportForm({handleNewReport}){
             })}
             </div>
 
-            {/* Upload photos */}
+            {/* Display Upload photos */}
             <div>
                 <label>Upload Photos:</label>
             </div>
 
+            {/* Display Comment */}
             <div>
                 <label>Comment</label>
                 <input
@@ -165,6 +192,7 @@ function NewReportForm({handleNewReport}){
                 onChange={formik.handleChange}
                 />
             </div>
+            
 
             {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>
@@ -173,6 +201,9 @@ function NewReportForm({handleNewReport}){
             ))}
 
         <button type="submit">Submit</button>
+        <button type="button" onClick={toggleForm}>Cancel</button>
+
+        {isSubmitted && <p>Your report has been successfully submitted!</p>}
 
         </form>
     );

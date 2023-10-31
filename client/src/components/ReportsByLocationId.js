@@ -1,6 +1,6 @@
 import React from "react";
 
-function ReportsByLocationId({ reports }) {
+function ReportsByLocationId({ reports, onDeleteReport, onUpdateReport, toggleUpdateForm }) {
     console.log("Reports by location array:", reports);
     
     return (
@@ -9,7 +9,7 @@ function ReportsByLocationId({ reports }) {
             <div key={report.id}>
               <h4>Report ID: {report.id}</h4>
               <p>User ID: {report.user_id}</p>
-              <p>Location ID: {report.location_id}</p>
+              <p>Location ID (HERE JUST TO CONFIRM LOCATION): {report.location_id}</p>
               <p>User Name: {report.username}</p>
               <p>User's Reported Features: {report.reported_features_names}</p>
               <p>Comment: {report.comment}</p>
@@ -20,6 +20,12 @@ function ReportsByLocationId({ reports }) {
                 ))
                 : "No photos available"
                 }</p>
+                <button onClick={() => onDeleteReport(report.id)}>Delete This Report</button>
+                
+                <button onClick={() => {
+                  toggleUpdateForm();
+                  onUpdateReport(report.id)
+                  }}>Update This Report</button>
             </div>
           ))}
         </div>
