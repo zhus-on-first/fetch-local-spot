@@ -1,6 +1,6 @@
 import React from "react";
 
-function ReportsByLocationId({ reports }) {
+function ReportsByLocationId({ reports, onDeleteReport }) {
     console.log("Reports by location array:", reports);
     
     return (
@@ -20,6 +20,7 @@ function ReportsByLocationId({ reports }) {
                 ))
                 : "No photos available"
                 }</p>
+                <button onClick={() => onDeleteReport(report.id)}>Delete This Report</button>
             </div>
           ))}
         </div>
