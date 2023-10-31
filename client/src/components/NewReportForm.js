@@ -88,6 +88,8 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
         }
     })
 
+    console.log("Formik errors after initialization:", formik.errors);
+
     return (
         <form onSubmit={formik.handleSubmit}>
             {/* Show dropdown of available user name ids based on initial database fetch */}

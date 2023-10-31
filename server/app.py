@@ -225,7 +225,7 @@ class ReportList(Resource):
                     password = fake.password()
                     )
                 db.session.add(user)
-                db.session.flush
+                db.session.flush()
 
             new_report = Report(
                 user_id = data.get("user_id"),

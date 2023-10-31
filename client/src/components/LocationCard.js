@@ -9,14 +9,14 @@ function LocationCard({ location }) {
     const featureNamesList = location.location_feature_names && location.location_feature_names.length > 0
     ? location.location_feature_names.map((lfn) => {
         return <li key={lfn.id}>{lfn.location_feature_name}</li>;
-        }) : <li>No location features available</li>;
+        }) : <li>No preset location features available</li>;
     
 
     // Render each reported features' name
     const reportedFeaturesList = location.reported_features_names && location.reported_features_names.length > 0
     ? location.reported_features_names.map((rfn) => {
         return <li key={rfn.id}>{rfn.reported_feature_name}</li>;
-        }) : <li>"No reported features available"</li>;
+        }) : <li>No reported features available</li>;
         
     return (
         <div>
