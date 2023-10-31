@@ -70,26 +70,31 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
         validationSchema: formSchema,
         onSubmit: async (values) => {
             console.log("Form values being posted:", values)
-            const response = await fetch("/reports", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(values),
-            });
+            try {
+                const response = await fetch("/reports", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(values),
+                });
 
-            if (response.ok) {
-                const newReport = await response.json();
-                handleNewReport(newReport)
-                setErrors([]);
-                formik.resetForm();
-                setIsSubmitted(true);
-            } else{
-                const errorMessages = await response.json();
-                setErrors(errorMessages.errors)
-            }
-        }
-    })
+                if (response.ok) {
+                    const newReport = await response.json();
+                    handleNewReport(newReport)
+                    setErrors([]);
+                    formik.resetForm();
+                    setIsSubmitted(true);
+                } else {
+                    const errorMessages = await response.json();
+                    setErrors(errorMessages.errors)
+                }
+            } catch (error) {
+                console.log("An error occurred:", error);
+                setErrors(["An unexpected error occurred"])
+            } 
+        },
+    });
 
     useEffect(() => {
         if (isSubmitted) {
@@ -113,6 +118,9 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
                         <option key={index} value={users.id}>{users.id}</option>
                     ))}
                 </select>
+                {formik.touched.user_id && formik.errors.user_id ? (
+                    <div>{formik.errors.user_id}</div>
+                ): null}
             </div>
 
             {/* Show dropdown of available location ids based on initial database fetch */}
