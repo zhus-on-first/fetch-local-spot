@@ -10,6 +10,8 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
         features: [],
     })
 
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
     const [errors, setErrors] = useState([])
 
     useEffect(() => {
@@ -80,7 +82,8 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
                 const newReport = await response.json();
                 handleNewReport(newReport)
                 setErrors([]);
-                formik.resetForm()
+                formik.resetForm();
+                setIsSubmitted(true);
             } else{
                 const errorMessages = await response.json();
                 setErrors(errorMessages.errors)
@@ -88,7 +91,13 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
         }
     })
 
-    console.log("Formik errors after initialization:", formik.errors);
+    useEffect(() => {
+        if (isSubmitted) {
+            setTimeout(() => {
+                setIsSubmitted(false);
+            }, 5000)
+        }
+    }, [isSubmitted]);
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -167,6 +176,7 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
                 onChange={formik.handleChange}
                 />
             </div>
+            
 
             {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>
@@ -176,6 +186,8 @@ function NewReportForm({handleNewReport, toggleForm, locationId}){
 
         <button type="submit">Submit</button>
         <button type="button" onClick={toggleForm}>Cancel</button>
+
+        {isSubmitted && <p>Your report has been successfully submitted!</p>}
 
         </form>
     );
