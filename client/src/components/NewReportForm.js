@@ -161,7 +161,6 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
                 // console.log('Current Feature ID: ', feature.id);
                 // console.log('Is feature ID in the array?: ', formik.values.reported_features.includes(feature.id));
 
-
                 return (
                     <div key={feature.id}>
                         <input 

@@ -51,11 +51,11 @@ class LocationList(Resource): # List all locations and useful into
                     }
                     for location_feature in location.location_features],
                 "reported_features_names": [
-                    {
-                        "id": reported_feature.id,
-                        "reported_feature_name": reported_feature.feature.name
-                    }
-                    
+                        {
+                            "id": reported_feature.id,
+                            "reported_feature_name": reported_feature.feature.name
+                        }
+                        
                      for report in location.reports for reported_feature in report.reported_features]
             } 
             for location in Location.query.all()
@@ -103,11 +103,11 @@ class LocationById(Resource):
                     }
                     for location_feature in location.location_features],
                 "reported_features_names": [
-                    {
-                        "id": reported_feature.id,
-                        "reported_feature_name": reported_feature.feature.name
-                    }
-                    
+                        {
+                            "id": reported_feature.id,
+                            "reported_feature_name": reported_feature.feature.name
+                        }
+                        
                      for report in location.reports for reported_feature in report.reported_features]
             } 
             return location_to_dict, 200
@@ -372,7 +372,17 @@ class ReportsByLocationId(Resource):
                 {
                     **report.to_dict(), 
                     "username": report.user.username if report.user else None,
-                    "reported_features_names": [feature.feature_name for feature in report.reported_features],
+
+                    # "reported_features_names": [feature.feature_name for feature in report.reported_features],
+                    
+                    "reported_features_names": [
+                        {
+                            "id": reported_feature.id,
+                            "reported_feature_name": reported_feature.feature.name
+                        }
+                        for reported_feature in report.reported_features
+                    ] if report.reported_features is not None and len(report.reported_features) > 0 else None,
+
                     "photos": [
                         {
                             "id": reported_photo.id, 

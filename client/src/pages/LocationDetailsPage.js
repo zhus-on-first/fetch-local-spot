@@ -98,8 +98,9 @@ function LocationDetailsPage() {
   // }
 
   const handleUpdateReport = async (updatedValues, report_id) => {
+    console.log("onUpdateReport called with:", updatedValues);
     try {
-      const response = await fetch(`/api/reports/${report_id}`, {
+      const response = await fetch(`/reports/${report_id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
