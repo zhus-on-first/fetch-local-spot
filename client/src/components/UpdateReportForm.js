@@ -66,7 +66,7 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
                     <Field id="newPhotos" name="newPhotos" type="file" multiple />
                 </div>
 
-                <button type="submit">Click Here to Finalize Update</button>
+                <button type="submit">Submit Update</button>
                 <button type="button" onClick={() => setEditingReport(null)}>Cancel</button>
             </Form>
             
@@ -76,3 +76,12 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
 }
 
 export default UpdateReportForm;
+
+// Patch object to use with test
+// {
+//     "user_id": 1,
+//     "location_id": 8,
+//     "comment": "tester 10/31 17:52",
+//     "reported_features": [],
+//     "photos": []
+// }
