@@ -6,6 +6,7 @@
 from flask import request
 from flask_restful import Resource
 from faker import Faker
+import logging
 
 # Local imports
 from config import app, db, api
@@ -50,11 +51,11 @@ class LocationList(Resource): # List all locations and useful into
                     }
                     for location_feature in location.location_features],
                 "reported_features_names": [
-                    {
-                        "id": reported_feature.id,
-                        "reported_feature_name": reported_feature.feature.name
-                    }
-                    
+                        {
+                            "id": reported_feature.id,
+                            "reported_feature_name": reported_feature.feature.name
+                        }
+                        
                      for report in location.reports for reported_feature in report.reported_features]
             } 
             for location in Location.query.all()
@@ -102,11 +103,11 @@ class LocationById(Resource):
                     }
                     for location_feature in location.location_features],
                 "reported_features_names": [
-                    {
-                        "id": reported_feature.id,
-                        "reported_feature_name": reported_feature.feature.name
-                    }
-                    
+                        {
+                            "id": reported_feature.id,
+                            "reported_feature_name": reported_feature.feature.name
+                        }
+                        
                      for report in location.reports for reported_feature in report.reported_features]
             } 
             return location_to_dict, 200
@@ -263,6 +264,8 @@ class ReportList(Resource):
 
 api.add_resource(ReportList, "/reports")
 
+logging.basicConfig(level=logging.DEBUG)
+
 class ReportById(Resource):
     def get(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
@@ -277,13 +280,75 @@ class ReportById(Resource):
             return {"message": "Report not found"}, 404
         else:
             try:
-                for attr in request.json:
-                    setattr(report, attr, request.json.get(attr))
+                for attr in request.json.keys(): # explicitly pull out keys from json object
+                    if attr not in ["reported_features", "photos"]: # check if not one of these
+                        setattr(report, attr, request.json.get(attr)) # if not, go ahead and update Report 
+
+                # Handle updating reported features
+                # Fetch existing reported features for this report
+                existing_feature_ids = {reported_feature.feature_id for reported_feature in report.reported_features}
+
+                # New feature IDs from the request
+                new_feature_ids = set(request.json.get("reported_features", []))
+
+                # Identify features to be added or removed
+                features_to_add = new_feature_ids - existing_feature_ids
+                features_to_remove = existing_feature_ids - new_feature_ids
+
+                # Add new features
+                for feature_id in features_to_add:
+                    new_feature = ReportedFeature(report_id=report.id, feature_id=feature_id)
+                    db.session.add(new_feature)
+
+                # Remove features no longer present
+                for feature_id in features_to_remove:
+                    feature_to_remove = ReportedFeature.query.filter_by(report_id=report.id, feature_id=feature_id).first()
+                    if feature_to_remove:
+                        db.session.delete(feature_to_remove)
+
+                # Handle photos
+
+                # Fetch existing reported photos for this report
+                existing_photo_urls = {photo.photo_url for photo in report.reported_photos}
+
+                # New photo URLs from the request
+                new_photo_urls = set(request.json.get("photos", []))
+
+                # Identify photos to be added or removed
+                photos_to_add = new_photo_urls - existing_photo_urls
+                photos_to_remove = existing_photo_urls - new_photo_urls
+
+                # Add new photos
+                for photo_url in photos_to_add:
+                    new_photo = ReportedPhoto(report_id=report.id, photo_url=photo_url)
+                    db.session.add(new_photo)
+
+                app.logger.debug(f"About to remove these photos: {photos_to_remove}")
+                # Remove photos no longer present
+                for photo_url in photos_to_remove:
+                    photo_to_remove = ReportedPhoto.query.filter_by(report_id=report.id, photo_url=photo_url).first()
+                    if photo_to_remove:
+                        db.session.delete(photo_to_remove)
+                        db.session.flush()
+
+                # # Remove photos no longer present
+                # for photo_url in photos_to_remove:
+                #     photo_to_remove = ReportedPhoto.query.filter_by(report_id=report.id, photo_url=photo_url).first()
+                #     if photo_to_remove:
+                #         logging.debug(f"Found photo to remove: {photo_to_remove}")
+                #         db.session.delete(photo_to_remove)
+                #     else:
+                #         logging.debug(f"Did not find photo to remove for URL: {photo_url}")
+                
+                app.logger.debug("Finished removing photos.")
+
                 db.session.commit()
                 return report.to_dict(), 200
+                
             except Exception as e:
                 db.session.rollback()
                 return {"errors": str(e)}, 400
+
 
     def delete(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
@@ -307,7 +372,17 @@ class ReportsByLocationId(Resource):
                 {
                     **report.to_dict(), 
                     "username": report.user.username if report.user else None,
+
                     "reported_features_names": [feature.feature_name for feature in report.reported_features],
+                    
+                    # "reported_features_names": [
+                    #     {
+                    #         "id": reported_feature.id,
+                    #         "reported_feature_name": reported_feature.feature.name
+                    #     }
+                    #     for reported_feature in report.reported_features
+                    # ] if report.reported_features is not None and len(report.reported_features) > 0 else None,
+
                     "photos": [
                         {
                             "id": reported_photo.id, 
