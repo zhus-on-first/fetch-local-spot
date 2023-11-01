@@ -19,6 +19,17 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
         photos: report.photos || []
     }
 
+    const handleDeletePhoto = (index, setFieldValue) => {
+        // Clone the existing photos array
+        const newPhotos = [...report.photos];
+        
+        // Remove the photo at the given index
+        newPhotos.splice(index, 1);
+        
+        // Update the Formik state
+        setFieldValue('photos', newPhotos);
+      };
+      
     return (
         <Formik
             initialValues={initialValues}
@@ -63,6 +74,17 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
                 {/* Photos*/}
                 <div>
                     <label htmlFor="photos">Photos:</label>
+                    {report.photos ? (
+                        report.photos.map((photo, index) => (
+                            <div key={index}>
+                            <img key={index} src={photo.photo_url} alt={`Uploaded ${index}`} />
+                            <button type="button" onClick={() => handleDeletePhoto(index)}>Delete</button>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No photos have been uploaded for you to edit.</p>
+                    )}
+                    
                     <Field id="newPhotos" name="newPhotos" type="file" multiple />
                 </div>
 
