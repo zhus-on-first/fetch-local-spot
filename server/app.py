@@ -373,15 +373,15 @@ class ReportsByLocationId(Resource):
                     **report.to_dict(), 
                     "username": report.user.username if report.user else None,
 
-                    # "reported_features_names": [feature.feature_name for feature in report.reported_features],
+                    "reported_features_names": [feature.feature_name for feature in report.reported_features],
                     
-                    "reported_features_names": [
-                        {
-                            "id": reported_feature.id,
-                            "reported_feature_name": reported_feature.feature.name
-                        }
-                        for reported_feature in report.reported_features
-                    ] if report.reported_features is not None and len(report.reported_features) > 0 else None,
+                    # "reported_features_names": [
+                    #     {
+                    #         "id": reported_feature.id,
+                    #         "reported_feature_name": reported_feature.feature.name
+                    #     }
+                    #     for reported_feature in report.reported_features
+                    # ] if report.reported_features is not None and len(report.reported_features) > 0 else None,
 
                     "photos": [
                         {

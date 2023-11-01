@@ -2,7 +2,7 @@ import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 
-function UpdateReportForm({reports_by_location_id, setEditingReport, onUpdateReport}) { 
+function UpdateReportForm({report, setEditingReport, onUpdateReport}) { 
 
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
@@ -43,7 +43,7 @@ function UpdateReportForm({reports_by_location_id, setEditingReport, onUpdateRep
             updatedFeatures.push(value);
         } else {
             const index = updatedFeatures.indexOf(value);
-            if (index >  -1) {
+            if (index > -1) {
                 updatedFeatures.splice(index, 1);
             }
         }
@@ -100,7 +100,7 @@ function UpdateReportForm({reports_by_location_id, setEditingReport, onUpdateRep
                         {/* Reported Features Field */}
                         <div>
                             <label htmlFor="reported_features">Reported Features</label>
-                            {report.reported_features_names && report.reported_features_names.length > 0 ? (
+                            {values.reported_features && values.reported_features.length > 0 ? (
                                 report.reported_features_names.map((feature, index) => (
                                     <div key={index}>
                                         <label>
