@@ -99,7 +99,7 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
 
                         {/* Reported Features Field */}
                         <div>
-                            <label htmlFor="reported_features">Reported Features</label>
+                            <label htmlFor="reported_features">Your Reported Features</label>
                             {values.reported_features && values.reported_features.length > 0 ? (
                                 report.reported_features_names.map((feature, index) => (
                                     <div key={index}>
