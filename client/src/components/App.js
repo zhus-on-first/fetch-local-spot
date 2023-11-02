@@ -34,7 +34,11 @@ function App() {
         <Route path="/locations/:id">
           <LocationDetailsPage />
         </Route>
-        <Route component={NotFoundPage} /> {/* Catch-all route */}
+        <Route>
+          {/* Catch all page. Test with http://localhost:3000/locations//page/1 */}
+          <NotFoundPage />
+        </Route>
+
       </Switch>
     </Router>
   );
