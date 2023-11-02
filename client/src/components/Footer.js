@@ -4,7 +4,7 @@ function Footer() {
     return (
         <header>
             <div className="logo-container">
-                <h1>Footer</h1>
+                <h1>Footer Page Under construction</h1>
             </div>
         </header>
     )

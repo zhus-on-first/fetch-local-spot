@@ -7,6 +7,7 @@ import FindHikePage from "../pages/FindHikePage";
 import FindRidePage from "../pages/FindRidePage";
 import FindFoodPage from "../pages/FindFoodPage";
 import LocationDetailsPage from "../pages/LocationDetailsPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/locations/:id">
           <LocationDetailsPage />
         </Route>
+        <Route component={NotFoundPage} /> {/* Catch-all route */}
       </Switch>
     </Router>
   );
