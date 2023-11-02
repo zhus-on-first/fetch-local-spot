@@ -6,7 +6,6 @@ import LocationList from "../components/LocationList";
 
 function HomePage() {
 
-
   return (
     <div>
         <Header />

@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --bg: #282c34;
   --header: #fff;
   --link: #61dafb;
@@ -17,4 +17,35 @@ header {
 
 .search-container {
   text-align: center;
+} */
+
+/* Default (Light) Theme */
+:root {
+  --background-color: white;
+  --text-color: black;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --background-color: black;
+  --text-color: white;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container, .search-container, .hamburger-container {
+  flex: 1;
+}
+
+.search-container {
+  text-align: center;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
