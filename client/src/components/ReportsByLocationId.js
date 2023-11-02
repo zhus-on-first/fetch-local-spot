@@ -19,16 +19,14 @@ function ReportsByLocationId({ reports, onDeleteReport, onUpdateReport, editingR
                   <p>User ID: {report.user_id}</p>
                   <p>Location ID (HERE JUST TO CONFIRM LOCATION): {report.location_id}</p>
                   <p>User Name: {report.username}</p>
-                  <p>User's Reported Features: {" "}
+                  <p>User's Reported Features:</p>
                     {report.reported_features_names.length > 0 ? (
                       <ul>
                         {report.reported_features_names.map((rfn, index) => (
                           <li key={index}>{rfn}</li>
                         ))}
                       </ul>
-                    ) : "No reported features"}
-                  </p>
-
+                    ) : <p>"No reported features"</p>}
                   <p>Comment: {report.comment}</p>
                   <p>Photos: {
                     report.photos ?
