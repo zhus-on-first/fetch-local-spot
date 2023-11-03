@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 
 # Standard library imports
-import logging
 
 # Remote library imports
-from sqlalchemy.exc import IntegrityError
-from marshmallow import ValidationError
 from flask import request
 from flask_restful import Resource
 from faker import Faker
+import logging
 
 # Local imports
 from config import app, db, api
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
-from schemas import UserSchema
 
 fake = Faker()
 
@@ -28,24 +25,16 @@ api.add_resource(Index, "/")
 
 class UserList(Resource):
     def get(self):
-        users = User.query.all()
-        user_schema = UserSchema(many=True)
-        return user_schema.dump(users), 200
+        users = [user.to_dict() for user in User.query.all()]
+        return users, 200
     
-    def post(self):
-        user_schema = UserSchema()
-        try:
-            user_data = request.get_json()
-            new_user = user_schema.load(user_data)
-            db.session.add(new_user)
-            db.session.commit()
-            return user_schema.dump(new_user), 201
-        except ValidationError as e:
-            return e.messages, 400
-        except IntegrityError:
-            db.session.rollback()
-            return {"message": "Username or email already exists."}, 400
-
+    # def signup(self):
+    #     new_user = User(
+    #     username = "username", 
+    #     email = "email", 
+    #     password = hashed
+    #     )
+    #     return new_user, 200
     
 api.add_resource(UserList, "/users")
 
