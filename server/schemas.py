@@ -24,14 +24,25 @@ class LocationSchema(SQLAlchemyAutoSchema):
         model = Location
         load_instance = True
         sqla_session = db.session
-        include_relationships = True
-    
+   
     id = auto_field()
     name = auto_field(required=True, validate=validate.Length(min=1))
     address = auto_field(required=True, validate=validate.Length(min=1))
     phone = auto_field(allow_none=True, validate=validate.Length(min=15, error="US phone numbers must be at least 15 digits when including area code."))
-    reports = auto_field()
-    location_type = auto_field()
+    reported_features_names = fields.Function(lambda obj: [
+        {
+            "id": reported_feature.id,
+            "reported_feature_name": reported_feature.feature.name
+        }
+            for report in obj.reports
+            for reported_feature in report.reported_features
+    ])
     location_type_name = fields.Function(lambda obj: obj.location_type.name if obj.location_type else None)
-    location_features = auto_field()
-    location_feature_names = fields.Function(lambda obj: [location_feature.feature_name for location_feature in obj.location_features])
+    location_feature_names = fields.Function(lambda obj: [
+        {
+            "id": location_feature.id,
+            "location_feature_name": location_feature.feature_name
+        }
+        for location_feature in obj.location_features
+    ])
+
