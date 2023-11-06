@@ -88,40 +88,46 @@ api.add_resource(LocationById, "/locations/<int:id>")
 
 class LocationByHikingType(Resource):
     def get(self):
-        hiking_locations = db.session.query(Location)\
-            .join(LocationType)\
-            .filter(LocationType.name == "hike")\
-            .all()
-    
-        location_schema = LocationSchema(many=True)
-        hiking_locations_data = location_schema.dump(hiking_locations)
-        return hiking_locations_data, 200
+        try:
+            hiking_locations = Location.get_hiking_locations()
+            if not hiking_locations:
+                return {"message": "No hiking locations found"}, 404
+            
+            location_schema = LocationSchema(many=True)
+            hiking_locations_data = location_schema.dump(hiking_locations)
+            return hiking_locations_data, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
     
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
 
 class LocationByFoodType(Resource):
     def get(self):
-        food_locations = db.session.query(Location)\
-            .join(LocationType)\
-            .filter(LocationType.name == "food")\
-            .all()
-        
-        location_schema = LocationSchema(many=True)
-        food_locations_data = location_schema.dump(food_locations)
-        return food_locations_data, 200
+        try:
+            food_locations = Location.get_food_locations()
+            if not food_locations:
+                return {"message": "No food locations found"}, 404
+            
+            location_schema = LocationSchema(many=True)
+            food_locations_data = location_schema.dump(food_locations)
+            return food_locations_data, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
     
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
 class LocationByRideType(Resource):
     def get(self):
-        ride_locations = db.session.query(Location)\
-            .join(LocationType)\
-            .filter(LocationType.name == "ride")\
-            .all()
+        try:
+            ride_locations = Location.get_ride_locations()
+            if not ride_locations:
+                return {"message": "No ride locations found"}, 404
         
-        location_schema = LocationSchema(many=True)
-        ride_locations_data = location_schema.dump(ride_locations)
-        return ride_locations_data, 200
+            location_schema = LocationSchema(many=True)
+            ride_locations_data = location_schema.dump(ride_locations)
+            return ride_locations_data, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 

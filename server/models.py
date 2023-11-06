@@ -97,6 +97,18 @@ class Location(db.Model):
     # A location has many reported features names through reports
     reported_features_names = association_proxy("reports", "reported_features_names")
 
+    @classmethod
+    def get_hiking_locations(cls):
+        return cls.query.join(LocationType).filter(LocationType.name == "hike").all()
+    
+    @classmethod
+    def get_food_locations(cls):
+        return cls.query.join(LocationType).filter(LocationType.name == "food").all()
+    
+    @classmethod
+    def get_ride_locations(cls):
+        return cls.query.join(LocationType).filter(LocationType.name == "ride").all()
+
     def __repr__(self):
         return f"<Location(id={self.id}: name={self.name}, address={self.address}, phone={self.phone}, location_type_id={self.location_type_id})>"
 
