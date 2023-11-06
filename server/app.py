@@ -15,7 +15,7 @@ from config import app, db, api
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
-from schemas import UserSchema
+from schemas import UserSchema, LocationSchema
 
 fake = Faker()
 
@@ -46,54 +46,31 @@ class UserList(Resource):
             db.session.rollback()
             return {"message": "Username or email already exists."}, 400
 
-    
 api.add_resource(UserList, "/users")
 
-class LocationList(Resource): # List all locations and useful into
+class LocationList(Resource):
     def get(self):
-        locations = [
-            {
-                **location.to_dict(), 
-                "location_type_name": location.location_type_name,
-                "location_feature_names": [
-                    {
-                        "id": location_feature.id,
-                        "location_feature_name": location_feature.feature_name
-                    }
-                    for location_feature in location.location_features],
-                "reported_features_names": [
-                        {
-                            "id": reported_feature.id,
-                            "reported_feature_name": reported_feature.feature.name
-                        }
-                        
-                     for report in location.reports for reported_feature in report.reported_features]
-            } 
-            for location in Location.query.all()
-        ]
+        locations = Location.query.all()
+        location_schema = LocationSchema(many=True)
 
-        return locations, 200
+        return location_schema.dump(locations), 200
 
     def post(self):
-        print("Received POST request")
+        # Initialize schema
+        location_schema = LocationSchema()
+        # Parse and validate incoming JSON data
         try:
-            new_location = Location(
-                name = request.json.get("name"),
-                address = request.json.get("address"),
-                phone = request.json.get("phone"),
-                location_type_id= request.json.get("location_type_id")
-            )
-            db.session.add(new_location)
-            db.session.commit()
-
-            return new_location.to_dict(), 201
-        
-        except ValueError as e:
+            location_data = request.get_json()  # Get data from request
+            new_location = location_schema.load(location_data)  # Deserialize data to new Location object
+            db.session.add(new_location)  # Add new Location to session
+            db.session.commit()  # Commit session
+            return location_schema.dump(new_location), 201  # Serialize and return new Location
+        except ValidationError as e:
+            db.session.rollback()  # Rollback session if validation errors
+            return e.messages, 400
+        except IntegrityError:
             db.session.rollback()
-            return {"errors": str(e)}, 400
-        except Exception as e:
-            db.session.rollback()
-            return {"errors": str(e)}, 400     
+            return {"message": "Location with given details already exists."}, 400  
 
 api.add_resource(LocationList, "/locations")
 
@@ -103,25 +80,9 @@ class LocationById(Resource):
         if location is None:
             return {"error": "Location not found"}, 404
         else:
-            location_to_dict = {
-
-                **location.to_dict(), 
-                "location_type_name": location.location_type_name,
-                "location_feature_names": [
-                    {
-                        "id": location_feature.id,
-                        "location_feature_name": location_feature.feature_name
-                    }
-                    for location_feature in location.location_features],
-                "reported_features_names": [
-                        {
-                            "id": reported_feature.id,
-                            "reported_feature_name": reported_feature.feature.name
-                        }
-                        
-                     for report in location.reports for reported_feature in report.reported_features]
-            } 
-            return location_to_dict, 200
+            location_schema = LocationSchema()
+            location_data = location_schema.dump(location)
+            return location_data, 200
     
 api.add_resource(LocationById, "/locations/<int:id>")
 
@@ -131,17 +92,10 @@ class LocationByHikingType(Resource):
             .join(LocationType)\
             .filter(LocationType.name == "hike")\
             .all()
-        
-        hiking_locations_dicts = [
-            {
-                **location.to_dict(), 
-                "location_type_name": location.location_type.name,
-                "feature_names": [feature.feature_name for feature in location.location_features]
-            } 
-            for location in hiking_locations
-        ]
-
-        return hiking_locations_dicts, 200
+    
+        location_schema = LocationSchema(many=True)
+        hiking_locations_data = location_schema.dump(hiking_locations)
+        return hiking_locations_data, 200
     
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
 
@@ -152,15 +106,9 @@ class LocationByFoodType(Resource):
             .filter(LocationType.name == "food")\
             .all()
         
-        food_locations_dicts = [
-            {
-                **location.to_dict(), 
-                "location_type_name": location.location_type.name,  
-                "feature_names": [feature.feature_name for feature in location.location_features]
-            } 
-            for location in food_locations
-        ]
-        return food_locations_dicts, 200
+        location_schema = LocationSchema(many=True)
+        food_locations_data = location_schema.dump(food_locations)
+        return food_locations_data, 200
     
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
@@ -171,50 +119,11 @@ class LocationByRideType(Resource):
             .filter(LocationType.name == "ride")\
             .all()
         
-        ride_locations_dicts = [
-            {
-                **location.to_dict(), 
-                "location_type_name": location.location_type.name,
-                "feature_names": [feature.feature_name for feature in location.location_features]
-            } 
-            for location in ride_locations
-        ]
-        return ride_locations_dicts, 200
+        location_schema = LocationSchema(many=True)
+        ride_locations_data = location_schema.dump(ride_locations)
+        return ride_locations_data, 200
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
-
-class FeatureList(Resource):
-    def get(self):
-        features = [feature.to_dict() for feature in Feature.query.all()]
-        return features, 200
-    
-api.add_resource(FeatureList, "/features")
-
-class LocationFeaturesByLocationId(Resource):
-    def get(self, location_id):
-        location_features = [
-            {
-                **feature.to_dict(), 
-                "feature_name": feature.feature_name
-            } 
-            for feature in LocationFeature.query.filter_by(location_id=location_id).all()
-        ]
-
-        return location_features, 200
-    
-# SAME AS ABOVE
-# class LocationFeaturesByLocationId(Resource): 
-#     def get(self, location_id):
-#         location_features = []
-        
-#         for feature in LocationFeature.query.filter_by(location_id=location_id).all():
-#             feature_dict = feature.to_dict(rules=("feature.name",))
-#             feature_dict["feature_name"] = feature.feature_name
-#             location_features.append(feature_dict)
-
-#         return location_features, 200
-    
-api.add_resource(LocationFeaturesByLocationId, "/locations/<int:location_id>/features")
 
 class ReportList(Resource):
     def get(self):
@@ -274,8 +183,6 @@ class ReportList(Resource):
             return {"errors": str(e)}, 400
 
 api.add_resource(ReportList, "/reports")
-
-logging.basicConfig(level=logging.DEBUG)
 
 class ReportById(Resource):
     def get(self, report_id):
@@ -341,15 +248,6 @@ class ReportById(Resource):
                     if photo_to_remove:
                         db.session.delete(photo_to_remove)
                         db.session.flush()
-
-                # # Remove photos no longer present
-                # for photo_url in photos_to_remove:
-                #     photo_to_remove = ReportedPhoto.query.filter_by(report_id=report.id, photo_url=photo_url).first()
-                #     if photo_to_remove:
-                #         logging.debug(f"Found photo to remove: {photo_to_remove}")
-                #         db.session.delete(photo_to_remove)
-                #     else:
-                #         logging.debug(f"Did not find photo to remove for URL: {photo_url}")
                 
                 app.logger.debug("Finished removing photos.")
 
@@ -385,14 +283,7 @@ class ReportsByLocationId(Resource):
                     "username": report.user.username if report.user else None,
 
                     "reported_features_names": [feature.feature_name for feature in report.reported_features],
-                    
-                    # "reported_features_names": [
-                    #     {
-                    #         "id": reported_feature.id,
-                    #         "reported_feature_name": reported_feature.feature.name
-                    #     }
-                    #     for reported_feature in report.reported_features
-                    # ] if report.reported_features is not None and len(report.reported_features) > 0 else None,
+
 
                     "photos": [
                         {

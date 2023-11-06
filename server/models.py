@@ -5,7 +5,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from config import db
 
 # Models go here!
-class User(db.Model, SerializerMixin):
+class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -18,9 +18,6 @@ class User(db.Model, SerializerMixin):
 
     # A user has many reported photos through reports
     reported_photos = association_proxy("reports", "reported_photos")
-
-    # Serialization
-    serialize_rules = ("-reports",)
 
     def __repr__(self):
         return f"<User(id={self.id}: username={self.username}, email={self.email}, password={self.password})>"
@@ -70,7 +67,7 @@ class ReportedPhoto(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<ReportPhoto(id={self.id}: report_id={self.report_id}, photo_url={self.photo_url})>"
 
-class Location(db.Model, SerializerMixin):
+class Location(db.Model):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -100,13 +97,10 @@ class Location(db.Model, SerializerMixin):
     # A location has many reported features names through reports
     reported_features_names = association_proxy("reports", "reported_features_names")
 
-    # Serialization
-    serialize_rules = ("-reports", "-location_type", "-location_features")
-
     def __repr__(self):
         return f"<Location(id={self.id}: name={self.name}, address={self.address}, phone={self.phone}, location_type_id={self.location_type_id})>"
 
-class LocationType(db.Model, SerializerMixin): # one of "find a hike", "find a food spot", or "find a ride"
+class LocationType(db.Model): # one of "find a hike", "find a food spot", or "find a ride"
     __tablename__ = "location_types" 
     
     id = db.Column(db.Integer, primary_key=True)
@@ -115,13 +109,10 @@ class LocationType(db.Model, SerializerMixin): # one of "find a hike", "find a f
     # A location_type has many locations
     locations = db.relationship("Location", back_populates="location_type")
 
-    # Serialize rule
-    serialize_rules = ("-locations",)
-
     def __repr__(self):
         return f"<LocationType(id={self.id}: name={self.name})>"
 
-class Feature(db.Model, SerializerMixin):
+class Feature(db.Model):
     __tablename__ = "features"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -133,10 +124,8 @@ class Feature(db.Model, SerializerMixin):
     # A feature is referenced by many reported_features
     reported_features = db.relationship("ReportedFeature", back_populates="feature")
 
-    # Serialize
-    serialize_rules = ("-location_features", "-reported_features")
 
-class LocationFeature(db.Model, SerializerMixin):
+class LocationFeature(db.Model):
     __tablename__ = "location_features"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -151,9 +140,6 @@ class LocationFeature(db.Model, SerializerMixin):
 
     # A location_feature has a name through feature
     feature_name = association_proxy("feature", "name")
-
-    # Serialization
-    serialize_rules = ("-location", "-feature")
 
     def __repr__(self):
         return f"<LocationFeature(id={self.id} location_id={self.location_id}, feature={self.feature_id})>"
