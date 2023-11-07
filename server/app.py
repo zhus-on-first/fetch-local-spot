@@ -16,7 +16,7 @@ from services import make_report
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Location, ReportedFeature, Feature
-from schemas import FeatureSchema, UserSchema, LocationSchema, GetReportSchema, PostReportSchema
+from schemas import FeatureSchema, UserSchema, LocationSchema, GetReportSchema, PostReportSchema, GetReportsByLocationIdSchema
 
 fake = Faker()
 
@@ -259,10 +259,11 @@ class ReportById(Resource):
             return {"message": "Report deleted"}, 200
 
 api.add_resource(ReportById, "/reports/<int:report_id>")
+
 class ReportsByLocationId(Resource):
     def get(self, location_id):
         reports = Report.query.filter_by(location_id=location_id).all()
-        reports_schema = GetReportSchema(many=True)
+        reports_schema = GetReportsByLocationIdSchema(many=True)
         if reports:
             return reports_schema.dump(reports), 200
         else:

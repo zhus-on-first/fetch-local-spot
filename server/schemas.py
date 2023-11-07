@@ -89,7 +89,6 @@ class GetReportSchema(SQLAlchemyAutoSchema):
         load_instance = True
         sqla_session = db.session
 
-
 class PostReportSchema(SQLAlchemyAutoSchema):
     # Report model fields
     id = auto_field(dump_only=True)
@@ -107,3 +106,19 @@ class PostReportSchema(SQLAlchemyAutoSchema):
         load_instance = False
         sqla_session = db.session
         include_fk = True
+
+class GetReportsByLocationIdSchema(SQLAlchemyAutoSchema):
+
+    # Define attributes
+    id = auto_field(dump_only=True)
+    user = fields.Nested(UserSimpleSchema)
+    location_id = auto_field(required=True)
+    comment = auto_field(allow_none=True)
+    reported_features_names = fields.Function(lambda obj: [feature.feature_name for feature in obj.reported_features])
+    reported_photos = fields.List(fields.Nested(ReportedPhotoSchema))
+
+    # Define Meta class
+    class Meta:
+        model = Report
+        load_instance = True
+        sqla_session = db.session

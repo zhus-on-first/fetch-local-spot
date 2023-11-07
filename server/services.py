@@ -50,6 +50,6 @@ def make_report(new_report_data):
         
     db.session.commit()
     db.session.refresh(new_report)
-    # new_report.user = user
-    
+    new_report.user = user
+
     return new_report
