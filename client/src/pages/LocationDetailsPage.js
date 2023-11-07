@@ -65,9 +65,29 @@ function LocationDetailsPage() {
     setIsFormVisible(!isFormVisible);
   };
 
-  const handleNewReport = (newReport) => {
-    setReportsDetails(prevReports => [...prevReports, newReport])
-  }
+  // const handleNewReport = (newReport) => {
+  //   setReportsDetails(prevReports => [...prevReports, newReport])
+  // }
+
+  const refreshReports = async () => {
+    try {
+      const refreshReportsResponse = await fetch(`/reports/location/${id}`);
+      if (refreshReportsResponse.ok) {
+        const updatedReports = await refreshReportsResponse.json();
+        setReportsDetails(updatedReports);
+      } else {
+        const errorMessages = await refreshReportsResponse.json();
+        console.log("Error received:", errorMessages);
+        setErrors(errorMessages.errors);
+      }
+    } catch (error) {
+      console.error(`An unexpected error occurred: ${error.message}`);
+    }
+  };
+
+  const handleNewReportSuccess = (newReport) => {
+    refreshReports(); // Refresh after a successful report submission to avoid async data issues
+  };
 
   // Delete Report
   const handleDeleteReport = async (reportId) => {
@@ -139,7 +159,7 @@ function LocationDetailsPage() {
           {isFormVisible && 
             <NewReportForm 
               locationId={id} 
-              handleNewReport={handleNewReport} 
+              handleNewReportSuccess={handleNewReportSuccess} 
               toggleNewReportForm={toggleNewReportForm}
               />
           }

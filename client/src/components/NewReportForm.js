@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
+function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}){
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -85,7 +85,7 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
                 if (response.ok) {
                     const newReport = await response.json();
                     console.log('New Report:', newReport);
-                    handleNewReport(newReport)
+                    handleNewReportSuccess(newReport)
                     setErrors([]);
                     formik.resetForm();
                     setIsSubmitted(true);
