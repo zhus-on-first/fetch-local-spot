@@ -8,13 +8,14 @@ from marshmallow import ValidationError
 from flask import request
 from flask_restful import Resource
 from faker import Faker
+import traceback
 
 # Local imports
 from config import app, db, api
 
 # Add your model imports
-from models import User, Report, ReportedPhoto, Location, ReportedFeature
-from schemas import UserSchema, LocationSchema, GetReportSchema, PostReportSchema
+from models import User, Report, ReportedPhoto, Location, ReportedFeature, Feature
+from schemas import FeatureSchema, UserSchema, LocationSchema, GetReportSchema, PostReportSchema
 
 fake = Faker()
 
@@ -76,13 +77,13 @@ api.add_resource(LocationList, "/locations")
 class LocationById(Resource):
     def get(self, id):
         location = Location.query.filter_by(id=id).first()
-        if location is None:
-            return {"error": "Location not found"}, 404
-        else:
+        if location:
             location_schema = LocationSchema()
             location_data = location_schema.dump(location)
             return location_data, 200
-    
+        else:
+             return {"error": "Location not found"}, 404
+
 api.add_resource(LocationById, "/locations/<int:id>")
 
 class LocationByHikingType(Resource):
@@ -130,30 +131,72 @@ class LocationByRideType(Resource):
     
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
+class FeatureList(Resource):
+    def get(self):
+        features = Feature.query.all()
+        feature_schema = FeatureSchema(many=True)
+        return feature_schema.dump(features), 200
+    
+api.add_resource(FeatureList, "/features")
 class ReportList(Resource):
     def get(self):
         reports = Report.query.all()
-        reports_schema = GetReportSchema(many=True)
-        return reports_schema.dump(reports), 200
-    
+        report_schema = GetReportSchema(many=True)
+        return report_schema.dump(reports), 200
+     
     def post(self):
-        report_schema = PostReportSchema()
         try:
+            # Get JSON data from request
             data = request.json
-            
-            # Deserialization
-            new_report = report_schema.load(data, session=db.session)
-            db.session.add(new_report)  
-            db.session.commit()
 
-            # Serialization and return created report 
+            # Initialize schema
+            report_schema = PostReportSchema()
+
+            user_id = data.get("user_id")
+            user = User.query.filter_by(id=user_id).first()
+            if not user:
+                user = User(
+                    id=user_id,
+                    username=fake.user_name(),
+                    email=fake.email(),
+                    password=fake.password()
+                )
+                db.session.add(user)
+                db.session.flush()
+
+            # Create new Report instance
+            new_report = Report(
+                user_id=data['user_id'],
+                location_id=data['location_id'],
+                comment=data['comment']
+            )
+            db.session.add(new_report)
+            db.session.flush()
+
+            for feature_id in data['reported_features_ids']:
+                new_feature = ReportedFeature(
+                    report_id=new_report.id,
+                    feature_id=feature_id
+                )
+                db.session.add(new_feature)
+            
+            for photo_url in data['photo_urls']:
+                new_photo = ReportedPhoto(
+                    report_id=new_report.id,
+                    photo_url=photo_url
+                )
+                db.session.add(new_photo)
+            
+            db.session.commit()  # Save all new objects to the database
             return report_schema.dump(new_report), 201
         
         except ValidationError as e:
             db.session.rollback()
-            return {"errors": e.messages}, 400
+            return {"Validation errors": e.messages}, 400
         except Exception as e:
-            return {"errors": str(e)}, 400
+            db.session.rollback()
+            traceback.print_exc()
+            return {"Exception errors": str(e)}, 400
 
 api.add_resource(ReportList, "/reports")
 

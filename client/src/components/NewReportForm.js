@@ -139,18 +139,6 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
             {/* Show all possible features */}
             <div>
             <label>Reported Features</label>
-            {/* {formData.features && formData.features.map((feature, index) => (
-
-                <div key={feature.id}>
-                    <input 
-                        type="checkbox"
-                        name="reported_features"
-                        value={feature.id}
-                        onChange={formik.handleChange}
-                    />
-                    <label>{feature.feature}</label>
-                </div>
-            ))} */}
 
             {formData.features && formData.features.map((feature) => {
             // Log current feature object to see structure

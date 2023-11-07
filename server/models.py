@@ -1,4 +1,3 @@
-from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 
 
@@ -22,7 +21,7 @@ class User(db.Model):
     def __repr__(self):
         return f"<User(id={self.id}: username={self.username}, email={self.email}, password={self.password})>"
 
-class Report(db.Model, SerializerMixin):
+class Report(db.Model):
     __tablename__ = "reports"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -45,13 +44,10 @@ class Report(db.Model, SerializerMixin):
     # A report has many reported feature names through reported features
     reported_features_names = association_proxy("reported_features", "feature_name")
 
-    # Serialization
-    serialize_rules = ("-reported_features", "-reported_photos", "-user", "-location")
-
     def __repr__(self):
         return f"<Report(id={self.id}: user_id={self.user_id}, location_id={self.location_id})>"
 
-class ReportedPhoto(db.Model, SerializerMixin):
+class ReportedPhoto(db.Model):
     __tablename__ = "reported_photos"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -60,9 +56,6 @@ class ReportedPhoto(db.Model, SerializerMixin):
 
     # A reported photo has a/belongs to a report
     report = db.relationship("Report", back_populates="reported_photos")
-
-    # Serialization
-    serialize_rules = ("-report",)
 
     def __repr__(self):
         return f"<ReportPhoto(id={self.id}: report_id={self.report_id}, photo_url={self.photo_url})>"
@@ -155,7 +148,7 @@ class LocationFeature(db.Model):
     def __repr__(self):
         return f"<LocationFeature(id={self.id} location_id={self.location_id}, feature={self.feature_id})>"
 
-class ReportedFeature(db.Model, SerializerMixin):
+class ReportedFeature(db.Model):
     __tablename__ = "reported_features"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -170,9 +163,6 @@ class ReportedFeature(db.Model, SerializerMixin):
 
     # A Reported_Feature has a name through Feature
     feature_name = association_proxy("feature", "name")
-
-    # Serialization
-    serialize_rules = ("-report", "-feature")
 
     def __repr__(self):
         return f"<ReportedFeature(id={self.id} report_id={self.report_id} feature_id={self.feature_id})>"

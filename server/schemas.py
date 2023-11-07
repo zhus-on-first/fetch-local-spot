@@ -5,13 +5,13 @@ from faker import Faker
 
 # Local imports
 from config import db
-from models import Report, ReportedFeature, ReportedPhoto, User, Location
+from models import Feature, Report, ReportedFeature, ReportedPhoto, User, Location
 
 fake = Faker()
 class UserSchema(SQLAlchemyAutoSchema):
 
     # Define attributes    
-    id = auto_field()
+    id = auto_field(dump_only=True)
     username = auto_field(required=True, validate=validate.Length(min=5, error="User name must be at least 5 characters."))
     email = auto_field(required=True, validate=validate.Email())
 
@@ -20,13 +20,11 @@ class UserSchema(SQLAlchemyAutoSchema):
         model = User
         load_instance = True
         sqla_session = db.session
-        include_relationships = True
-        include_fk = True    
 
 class LocationSchema(SQLAlchemyAutoSchema):
 
     # Define attributes
-    id = auto_field()
+    id = auto_field(dump_only=True)
     name = auto_field(required=True, validate=validate.Length(min=1))
     address = auto_field(required=True, validate=validate.Length(min=1))
     phone = auto_field(allow_none=True, validate=validate.Length(min=15, error="US phone numbers must be at least 15 digits when including area code."))
@@ -51,7 +49,13 @@ class LocationSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Location
         load_instance = True
-        sqla_session = db.session    
+        sqla_session = db.session   
+
+class FeatureSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Feature
+        load_instance = True
+        sqla_session = db.session
 
 class UserSimpleSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -65,17 +69,10 @@ class ReportedPhotoSchema(SQLAlchemyAutoSchema):
         model = ReportedPhoto
         load_instance = True
         sqla_session = db.session
-
-class ReportedFeatureSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = ReportedFeature
-        load_instance = True
-        sqla_session = db.session
-
 class GetReportSchema(SQLAlchemyAutoSchema):
 
     # Define attributes
-    id = auto_field()
+    id = auto_field(dump_only=True)
     user = fields.Nested(UserSimpleSchema)
     location_id = auto_field(required=True)
     comment = auto_field(allow_none=True)
@@ -87,79 +84,20 @@ class GetReportSchema(SQLAlchemyAutoSchema):
         model = Report
         load_instance = True
         sqla_session = db.session
-class PostReportSchema(SQLAlchemyAutoSchema):
 
+class PostReportSchema(SQLAlchemyAutoSchema):
     # Report model fields
-    id = auto_field()
+    id = auto_field(dump_only=True)
     user_id = auto_field(required=True)
-    location_id = auto_field(required=True, validate=validate.Length)
+    location_id = auto_field(required=True, validate=validate.Range(min=1))
     comment = auto_field(allow_none=True)
 
-    # Related objects' fields
-    reported_features = fields.List(
-        fields.Nested(ReportedFeatureSchema),
-        required=True,
-        error_messages={"required": "Reported features are required for creating a new report. Please include at least one feature."}
-    )
-    photo_urls = fields.List(fields.Nested(ReportedPhotoSchema), required=False)
-
-    # Define methods
-    @post_load
-    def create_report(self, data, **kwargs):
-        # Get user data from deserialized data
-        user_id = data.get("user_id")
-
-        # Check if user already exists in db
-        user = User.query.filter_by(id=user_id).first()
-
-        # If not, create new user with fake values
-        if not user:
-            user = User(
-                id = user_id,
-                username = fake.user_name(),
-                email =fake.email(),
-                password = fake.password()
-            )
-            db.session.add(user)
-            db.session.flush()  # Ensure it gets an ID
-        
-        # Create the report instance
-        new_report = Report(
-            user_id=user_id,
-            location_id=data.get('location_id'),
-            comment=data.get('comment')
-        )
-        db.session.add(new_report)
-        db.session.flush()
-
-        # Handle reported photos
-        photo_data = data.get("reported_photos", [])
-        photos = [ReportedPhoto(**photo) for photo in photo_data]
-        
-        
-        # db.session.add(new_photo)
-        # for photo_url in data.get("photo_urls", []):
-        #     new_photo = ReportedPhoto(
-        #         report_id=new_report.id,
-        #         photo_url=photo_url
-        #     )
-        #     db.session.add(new_photo)
-
-        # Handle reported features
-        feature_data = data.get("reported_features", [])
-        features = [ReportedFeature(**feature) for feature in feature_data]
-
-        # Create the report instance
-        report = Report(**data)
-
-        # Add photos and features to the report
-        report.reported_photos.extend(photos)
-        report.reported_features.extend(features)
-
-        return report
+    # Custom fields to accept incoming reported_features and photo_urls
+    reported_features_ids = fields.List(fields.Integer(), required=True)
+    photo_urls = fields.List(fields.URL(), required=False)
 
     # Define Meta class
     class Meta:
         model = Report
-        load_instance = True
+        load_instance = False
         sqla_session = db.session
