@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # Standard library imports
-import logging
 
 # Remote library imports
 from sqlalchemy.exc import IntegrityError
@@ -14,8 +13,8 @@ from faker import Faker
 from config import app, db, api
 
 # Add your model imports
-from models import User, Report, ReportedPhoto, Feature, Location, LocationType, LocationFeature, ReportedFeature
-from schemas import UserSchema, LocationSchema
+from models import User, Report, ReportedPhoto, Location, ReportedFeature
+from schemas import UserSchema, LocationSchema, GetReportSchema, PostReportSchema
 
 fake = Faker()
 
@@ -133,58 +132,26 @@ api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
 class ReportList(Resource):
     def get(self):
-        reports = [report.to_dict() for report in Report.query.all()]
-        return reports, 200
+        reports = Report.query.all()
+        reports_schema = GetReportSchema(many=True)
+        return reports_schema.dump(reports), 200
     
     def post(self):
+        report_schema = PostReportSchema()
         try:
             data = request.json
-            print(f"Incoming new report data: {data}")
-
-            # Create new user if it doesn't exist
-            user_id = data.get("user_id")
-            user = User.query.filter_by(id=user_id).first()
-            if user is None:
-                user = User(
-                    id = user_id,
-                    username = fake.user_name(),
-                    email = fake.email(),
-                    password = fake.password()
-                    )
-                db.session.add(user)
-                db.session.flush()
-
-            new_report = Report(
-                user_id = data.get("user_id"),
-                location_id = data.get("location_id"),
-                comment = data.get("comment")
-            )
-            print(f"New Report before adding to session: {new_report}")
-            db.session.add(new_report)
-            db.session.flush() # To ensure it gets an ID fore photo to reference
-            print(f"New Report after flush: {new_report}")
-
-            for photo_url in data.get("photo_urls", []):
-                new_photo = ReportedPhoto(
-                    report_id=new_report.id,
-                    photo_url=photo_url
-                )
-                db.session.add(new_photo)
-
-            # Handle Features
-            for feature_id in data.get("reported_features", []):
-                reported_feature = ReportedFeature(    
-                    report_id=new_report.id,
-                    feature_id=feature_id
-                )
-                db.session.add(reported_feature)
-                            
+            
+            # Deserialization
+            new_report = report_schema.load(data, session=db.session)
+            db.session.add(new_report)  
             db.session.commit()
-            return new_report.to_dict(), 201
+
+            # Serialization and return created report 
+            return report_schema.dump(new_report), 201
         
-        except ValueError as e:
+        except ValidationError as e:
             db.session.rollback()
-            return {"errors": str(e)}, 400
+            return {"errors": e.messages}, 400
         except Exception as e:
             return {"errors": str(e)}, 400
 
@@ -192,11 +159,12 @@ api.add_resource(ReportList, "/reports")
 
 class ReportById(Resource):
     def get(self, report_id):
-        report = db.session.query(Report).filter_by(id=report_id).first()
-        if report is None:
-            return {"message": "Report not found"}, 404
+        report = db.session.query(Report).get(report_id)
+        report_schema = GetReportSchema()
+        if report:
+            return report_schema.dump(report), 200
         else:
-            return report.to_dict(), 200
+            return {"message": "Report not found"}, 404
     
     def patch(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
@@ -264,7 +232,6 @@ class ReportById(Resource):
                 db.session.rollback()
                 return {"errors": str(e)}, 400
 
-
     def delete(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:           
@@ -277,35 +244,12 @@ class ReportById(Resource):
 api.add_resource(ReportById, "/reports/<int:report_id>")
 class ReportsByLocationId(Resource):
     def get(self, location_id):
-        try:
-            print(f"Querying reports for location_id = {location_id}")
-
-            query_result = Report.query.filter_by(location_id=location_id).all()
-            print(f"Query Result: {query_result}")
-
-            reports = [
-                {
-                    **report.to_dict(), 
-                    "username": report.user.username if report.user else None,
-
-                    "reported_features_names": [feature.feature_name for feature in report.reported_features],
-
-
-                    "photos": [
-                        {
-                            "id": reported_photo.id, 
-                            "photo_url": reported_photo.photo_url
-                        } 
-                        for reported_photo in report.reported_photos
-                    ] if report.reported_photos is not None and len(report.reported_photos) > 0 else None
-                }
-                for report in query_result
-            ]
-            print(f"Reports: {reports}")
-
-            return reports, 200
-        except Exception as e:
-            return {"error": str(e)}, 400
+        reports = Report.query.filter_by(location_id=location_id).all()
+        reports_schema = GetReportSchema(many=True)
+        if reports:
+            return reports_schema.dump(reports), 200
+        else:
+            return {"error": "No reports found for this location"}, 404
 
 api.add_resource(ReportsByLocationId, "/reports/location/<int:location_id>")
 

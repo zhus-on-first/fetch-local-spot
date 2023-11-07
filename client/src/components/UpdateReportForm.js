@@ -64,17 +64,6 @@ function UpdateReportForm({report, setEditingReport, onUpdateReport}) {
                 setSubmitting(false);
             }}
         >
-
-            {/* <Form>
-                <Field type="number" name="user_id" />
-                <Field type="number" name="location_id" />
-                <Field type="check-box" name="reported_features" />
-                <Field type="url" name="photo_url" />
-                <Field type="text" name="comment" />
-                <button type="submit">Save</button>
-                <button type="button" onClick={() => setEditingReport(null)}>Cancel</button>
-            </Form> */}
-
             {({ setFieldValue, values, errors }) => {
                 console.log("Formik errors:", errors);
                 return (

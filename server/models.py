@@ -136,7 +136,6 @@ class Feature(db.Model):
     # A feature is referenced by many reported_features
     reported_features = db.relationship("ReportedFeature", back_populates="feature")
 
-
 class LocationFeature(db.Model):
     __tablename__ = "location_features"
 

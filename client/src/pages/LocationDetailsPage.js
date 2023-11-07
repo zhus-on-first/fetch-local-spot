@@ -11,7 +11,6 @@ import Footer from "../components/Footer";
 
 function LocationDetailsPage() {
   const { id } = useParams()
-  // const id = 1;
 
   // Location Details States
   const [isLoading, setIsLoading] = useState(false);
@@ -90,12 +89,6 @@ function LocationDetailsPage() {
 
   // Update Report
   const [editingReport, setEditingReport] = useState(null);
-  // const [isUpdateForm, setIsUpdateForm] = useState(false)
-
-  // const toggleUpdateForm = (report_id) => {
-  //   setEditingReport(report_id);
-  //   setIsUpdateForm(!isUpdateForm);
-  // }
 
   const handleUpdateReport = async (updatedValues, report_id) => {
     console.log("onUpdateReport called with:", updatedValues);
