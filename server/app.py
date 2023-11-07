@@ -12,6 +12,7 @@ import traceback
 
 # Local imports
 from config import app, db, api
+from services import make_report
 
 # Add your model imports
 from models import User, Report, ReportedPhoto, Location, ReportedFeature, Feature
@@ -147,47 +148,20 @@ class ReportList(Resource):
     def post(self):
         try:
             # Get JSON data from request
-            data = request.json
+            new_report_data = request.json
 
             # Initialize schema
             report_schema = PostReportSchema()
 
-            user_id = data.get("user_id")
-            user = User.query.filter_by(id=user_id).first()
-            if not user:
-                user = User(
-                    id=user_id,
-                    username=fake.user_name(),
-                    email=fake.email(),
-                    password=fake.password()
-                )
-                db.session.add(user)
-                db.session.flush()
+            # Deserialize JSON data
+            deserialized_new_report_data = report_schema.load(new_report_data)
 
-            # Create new Report instance
-            new_report = Report(
-                user_id=data['user_id'],
-                location_id=data['location_id'],
-                comment=data['comment']
-            )
-            db.session.add(new_report)
-            db.session.flush()
+            # Create Report instance with processed data using the service function
+            new_report = make_report(deserialized_new_report_data)
+            print(new_report.reported_features)
+            print(new_report.reported_photos)
 
-            for feature_id in data['reported_features_ids']:
-                new_feature = ReportedFeature(
-                    report_id=new_report.id,
-                    feature_id=feature_id
-                )
-                db.session.add(new_feature)
-            
-            for photo_url in data['photo_urls']:
-                new_photo = ReportedPhoto(
-                    report_id=new_report.id,
-                    photo_url=photo_url
-                )
-                db.session.add(new_photo)
-            
-            db.session.commit()  # Save all new objects to the database
+            # Return serialized Report
             return report_schema.dump(new_report), 201
         
         except ValidationError as e:

@@ -58,7 +58,7 @@ class ReportedPhoto(db.Model):
     report = db.relationship("Report", back_populates="reported_photos")
 
     def __repr__(self):
-        return f"<ReportPhoto(id={self.id}: report_id={self.report_id}, photo_url={self.photo_url})>"
+        return f"<ReportedPhoto(id={self.id}: report_id={self.report_id}, photo_url={self.photo_url})>"
 
 class Location(db.Model):
     __tablename__ = "locations"
@@ -165,4 +165,4 @@ class ReportedFeature(db.Model):
     feature_name = association_proxy("feature", "name")
 
     def __repr__(self):
-        return f"<ReportedFeature(id={self.id} report_id={self.report_id} feature_id={self.feature_id})>"
+        return f"<ReportedFeature(id={self.id}: report_id={self.report_id}, feature_id={self.feature_id})>"
