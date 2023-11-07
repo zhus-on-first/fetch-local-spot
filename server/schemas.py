@@ -1,11 +1,11 @@
 # Remote library imports
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-from marshmallow import validate, fields, post_load
+from marshmallow import validate, fields
 from faker import Faker
 
 # Local imports
 from config import db
-from models import Feature, Report, ReportedFeature, ReportedPhoto, User, Location
+from models import Feature, Report, ReportedPhoto, User, Location
 
 fake = Faker()
 class UserSchema(SQLAlchemyAutoSchema):
@@ -49,13 +49,15 @@ class LocationSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Location
         load_instance = True
-        sqla_session = db.session   
+        sqla_session = db.session
+      
 
 class FeatureSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Feature
         load_instance = True
         sqla_session = db.session
+      
 
 class UserSimpleSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -63,12 +65,14 @@ class UserSimpleSchema(SQLAlchemyAutoSchema):
         fields = ("id", "username")
         load_instance = True
         sqla_session = db.session
+    
 
 class ReportedPhotoSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = ReportedPhoto
         load_instance = True
         sqla_session = db.session
+     
 class GetReportSchema(SQLAlchemyAutoSchema):
 
     # Define attributes
@@ -84,6 +88,7 @@ class GetReportSchema(SQLAlchemyAutoSchema):
         model = Report
         load_instance = True
         sqla_session = db.session
+
 
 class PostReportSchema(SQLAlchemyAutoSchema):
     # Report model fields
@@ -101,3 +106,4 @@ class PostReportSchema(SQLAlchemyAutoSchema):
         model = Report
         load_instance = False
         sqla_session = db.session
+        include_fk = True

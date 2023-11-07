@@ -54,17 +54,20 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
         location_id: Yup.number().required("Required"),
-        reported_features: Yup.array().min(1, "Please select at least 1 feature"),
-        photo_url: Yup.string().url("Must be a url")
-	});
+        reported_features_ids: Yup.array().of(Yup.number()).min(1, "Please select at least one feature"),
+        photo_urls: Yup.array().of(Yup.string().url("Must be a valid URL")),
+        comment: Yup.string().nullable()
+    });
     
-    const initialValues ={
+    const initialValues = {
         user_id: "",
-        location_id : locationId || "",
-        reported_features: [],
-        photo_url: "",
+        location_id: locationId || "",
+        reported_features_ids: [], 
+        photo_urls: [],
         comment: ""
     }
+    console.log('Formik initial values:', initialValues);
+
     const formik = useFormik({
         initialValues,
         validationSchema: formSchema,
@@ -81,6 +84,7 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
 
                 if (response.ok) {
                     const newReport = await response.json();
+                    console.log('New Report:', newReport);
                     handleNewReport(newReport)
                     setErrors([]);
                     formik.resetForm();
@@ -103,6 +107,23 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
             }, 5000)
         }
     }, [isSubmitted]);
+
+    const handleFeatureChange = (e) => {
+        const { value, checked } = e.target;
+        const { reported_features_ids } = formik.values;
+    
+        if (checked) {
+            formik.setFieldValue('reported_features_ids', [...reported_features_ids, parseInt(value)]);
+        } else {
+            formik.setFieldValue('reported_features_ids', reported_features_ids.filter((id) => id !== parseInt(value)));
+        }
+    }
+    
+    const handlePhotoUrlChange = (e, index) => {
+        const newPhotoUrls = [...formik.values.photo_urls];
+        newPhotoUrls[index] = e.target.value;
+        formik.setFieldValue("photo_urls", newPhotoUrls);
+    };
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -138,35 +159,37 @@ function NewReportForm({handleNewReport, toggleNewReportForm, locationId}){
 
             {/* Show all possible features */}
             <div>
-            <label>Reported Features</label>
+                <label>Reported Features</label>
 
-            {formData.features && formData.features.map((feature) => {
-            // Log current feature object to see structure
-                console.log("Current feature:", feature);
-
-            // Debug resetting checkbox
-                // console.log('Reported Features Array: ', formik.values.reported_features);
-                // console.log('Current Feature ID: ', feature.id);
-                // console.log('Is feature ID in the array?: ', formik.values.reported_features.includes(feature.id));
-
-                return (
-                    <div key={feature.id}>
-                        <input 
-                            type="checkbox"
-                            name="reported_features"
-                            value={feature.id}
-                            checked={formik.values.reported_features.includes(String(feature.id))} // Reset checked boxes
-                            onChange={formik.handleChange}
-                        />
-                        <label>{feature.id}: {feature.name}</label>
-                    </div>
-                );
-            })}
+                {formData.features && formData.features.map((feature) => {
+                    return (
+                        <div key={feature.id}>
+                            <input 
+                                type="checkbox"
+                                name="reported_features_ids"
+                                value={feature.id}
+                                checked={formik.values.reported_features_ids.includes(feature.id)}
+                                onChange={handleFeatureChange}
+                            />
+                            <label>{feature.id}: {feature.name}</label>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Display Upload photos */}
             <div>
-                <label>Upload Photos:</label>
+                <label>Photo URLs:</label>
+                {formik.values.photo_urls.map((url, index) => (
+                    <input 
+                        key={index}
+                        type="text"
+                        name={`photo_urls[${index}]`}
+                        value={url}
+                        onChange={e => handlePhotoUrlChange(e, index)}
+                    />
+                ))}
+                <button type="button" onClick={() => formik.setFieldValue('photo_urls', [...formik.values.photo_urls, ''])}>Add Photo URL</button>
             </div>
 
             {/* Display Comment */}
@@ -203,7 +226,7 @@ export default NewReportForm;
 // {
 //     "user_id": 1,
 //     "location_id": 2,
-//     "reported_features": [1, 3, 4],
+//     "reported_features_ids": [1, 3, 4],
 //     "photo_url": "http://www.photo.com/1.jpg",
 //     "comment": "Great place!"
 //   }

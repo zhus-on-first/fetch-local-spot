@@ -8,6 +8,7 @@ function ReportsByLocationId({ reports, onDeleteReport, onUpdateReport, editingR
     return (
         <div>
           {reports.map((report) => {
+            console.log('Report in list:', report);
             console.log("Report ID from the report object:", report.id);
             console.log("Currently editing report with ID:", editingReport);
 
@@ -16,9 +17,9 @@ function ReportsByLocationId({ reports, onDeleteReport, onUpdateReport, editingR
 
                   {/* Static Report Details */}
                   <h4>Report ID: {report.id}</h4>
-                  <p>User ID: {report.user.id}</p>
+                  <p>User ID: {report.user?.id}</p>
                   <p>Location ID (HERE JUST TO CONFIRM LOCATION): {report.location_id}</p>
-                  <p>User Name: {report.user.username}</p>
+                  <p>User Name: {report.user?.username}</p>
                   <p>User's Reported Features:</p>
                     {report.reported_features_names && report.reported_features_names.length > 0 ? (
                       <ul>

@@ -54,6 +54,8 @@ function LocationDetailsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  
+  console.log("Reports details before passing to component:", reportsDetails);
 
 
   // Add a Report
