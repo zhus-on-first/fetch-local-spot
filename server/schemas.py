@@ -111,6 +111,8 @@ class GetReportsByLocationIdSchema(SQLAlchemyAutoSchema):
 
     # Define attributes
     id = auto_field(dump_only=True)
+    user_id = fields.Function(lambda obj: obj.user.id)
+    username = fields.Function(lambda obj: obj.user.username)
     user = fields.Nested(UserSimpleSchema)
     location_id = auto_field(required=True)
     comment = auto_field(allow_none=True)
@@ -122,3 +124,20 @@ class GetReportsByLocationIdSchema(SQLAlchemyAutoSchema):
         model = Report
         load_instance = True
         sqla_session = db.session
+
+class PatchReportByIdSchema(SQLAlchemyAutoSchema):
+    # Update fields
+    user_id = fields.Integer(required=True)
+    location_id = fields.Integer(required=True)
+    comment = fields.String(allow_none=True)
+
+    # Custom fields to accept incoming reported_features and photo_urls
+    reported_features = fields.List(fields.Integer(), required=False)
+    photos = fields.List(fields.URL(), required=False)
+
+    class Meta:
+        model = Report
+        load_instance = False
+        sqla_session = db.session
+
+patch_report_schema = PatchReportByIdSchema()

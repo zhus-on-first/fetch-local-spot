@@ -166,3 +166,4 @@ class ReportedFeature(db.Model):
 
     def __repr__(self):
         return f"<ReportedFeature(id={self.id}: report_id={self.report_id}, feature_id={self.feature_id})>"
+    

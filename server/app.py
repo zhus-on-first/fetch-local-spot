@@ -12,11 +12,12 @@ import traceback
 
 # Local imports
 from config import app, db, api
-from services import make_report
+from services import make_report, patch_report
 
 # Add your model imports
-from models import User, Report, ReportedPhoto, Location, ReportedFeature, Feature
-from schemas import FeatureSchema, UserSchema, LocationSchema, GetReportSchema, PostReportSchema, GetReportsByLocationIdSchema
+from models import User, Report, Location, Feature
+from schemas import FeatureSchema, UserSchema, LocationSchema
+from schemas import GetReportSchema, PostReportSchema, GetReportsByLocationIdSchema, patch_report_schema
 
 fake = Faker()
 
@@ -184,70 +185,27 @@ class ReportById(Resource):
             return {"message": "Report not found"}, 404
     
     def patch(self, report_id):
-        report = db.session.query(Report).filter_by(id=report_id).first()
-        if report is None:
-            return {"message": "Report not found"}, 404
-        else:
-            try:
-                for attr in request.json.keys(): # explicitly pull out keys from json object
-                    if attr not in ["reported_features", "photos"]: # check if not one of these
-                        setattr(report, attr, request.json.get(attr)) # if not, go ahead and update Report 
+        # Get JSON data from request
+        patch_data = request.get_json()
 
-                # Handle updating reported features
-                # Fetch existing reported features for this report
-                existing_feature_ids = {reported_feature.feature_id for reported_feature in report.reported_features}
+        # Deserialize and validate the request data
+        try:
+            validated_patch_data= patch_report_schema.load(patch_data)
+        except ValidationError as e:
+            return {"errors": e.messages}, 400
 
-                # New feature IDs from the request
-                new_feature_ids = set(request.json.get("reported_features", []))
-
-                # Identify features to be added or removed
-                features_to_add = new_feature_ids - existing_feature_ids
-                features_to_remove = existing_feature_ids - new_feature_ids
-
-                # Add new features
-                for feature_id in features_to_add:
-                    new_feature = ReportedFeature(report_id=report.id, feature_id=feature_id)
-                    db.session.add(new_feature)
-
-                # Remove features no longer present
-                for feature_id in features_to_remove:
-                    feature_to_remove = ReportedFeature.query.filter_by(report_id=report.id, feature_id=feature_id).first()
-                    if feature_to_remove:
-                        db.session.delete(feature_to_remove)
-
-                # Handle photos
-
-                # Fetch existing reported photos for this report
-                existing_photo_urls = {photo.photo_url for photo in report.reported_photos}
-
-                # New photo URLs from the request
-                new_photo_urls = set(request.json.get("photos", []))
-
-                # Identify photos to be added or removed
-                photos_to_add = new_photo_urls - existing_photo_urls
-                photos_to_remove = existing_photo_urls - new_photo_urls
-
-                # Add new photos
-                for photo_url in photos_to_add:
-                    new_photo = ReportedPhoto(report_id=report.id, photo_url=photo_url)
-                    db.session.add(new_photo)
-
-                app.logger.debug(f"About to remove these photos: {photos_to_remove}")
-                # Remove photos no longer present
-                for photo_url in photos_to_remove:
-                    photo_to_remove = ReportedPhoto.query.filter_by(report_id=report.id, photo_url=photo_url).first()
-                    if photo_to_remove:
-                        db.session.delete(photo_to_remove)
-                        db.session.flush()
-                
-                app.logger.debug("Finished removing photos.")
-
-                db.session.commit()
-                return report.to_dict(), 200
-                
-            except Exception as e:
-                db.session.rollback()
-                return {"errors": str(e)}, 400
+        try:
+            # Call service layer to update the report
+            updated_report = patch_report(report_id, validated_patch_data)
+            
+            # Serialize and return the updated report
+            return patch_report_schema.dump(updated_report), 200
+        
+        except ValidationError as err:
+            return {"errors": err.messages}, 400
+        except Exception as e:
+            db.session.rollback()
+            return {"errors": str(e)}, 400
 
     def delete(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
