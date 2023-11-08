@@ -11,7 +11,6 @@ import Footer from "../components/Footer";
 
 function LocationDetailsPage() {
   const { id } = useParams()
-  // const id = 1;
 
   // Location Details States
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +54,8 @@ function LocationDetailsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  
+  console.log("Reports details before passing to component:", reportsDetails);
 
 
   // Add a Report
@@ -64,9 +65,29 @@ function LocationDetailsPage() {
     setIsFormVisible(!isFormVisible);
   };
 
-  const handleNewReport = (newReport) => {
-    setReportsDetails(prevReports => [...prevReports, newReport])
-  }
+  // const handleNewReport = (newReport) => {
+  //   setReportsDetails(prevReports => [...prevReports, newReport])
+  // }
+
+  const refreshReports = async () => {
+    try {
+      const refreshReportsResponse = await fetch(`/reports/location/${id}`);
+      if (refreshReportsResponse.ok) {
+        const updatedReports = await refreshReportsResponse.json();
+        setReportsDetails(updatedReports);
+      } else {
+        const errorMessages = await refreshReportsResponse.json();
+        console.log("Error received:", errorMessages);
+        setErrors(errorMessages.errors);
+      }
+    } catch (error) {
+      console.error(`An unexpected error occurred: ${error.message}`);
+    }
+  };
+
+  const handleNewReportSuccess = (newReport) => {
+    refreshReports(); // Refresh after a successful report submission to avoid async data issues
+  };
 
   // Delete Report
   const handleDeleteReport = async (reportId) => {
@@ -90,12 +111,6 @@ function LocationDetailsPage() {
 
   // Update Report
   const [editingReport, setEditingReport] = useState(null);
-  // const [isUpdateForm, setIsUpdateForm] = useState(false)
-
-  // const toggleUpdateForm = (report_id) => {
-  //   setEditingReport(report_id);
-  //   setIsUpdateForm(!isUpdateForm);
-  // }
 
   const handleUpdateReport = async (updatedValues, report_id) => {
     console.log("onUpdateReport called with:", updatedValues);
@@ -144,7 +159,7 @@ function LocationDetailsPage() {
           {isFormVisible && 
             <NewReportForm 
               locationId={id} 
-              handleNewReport={handleNewReport} 
+              handleNewReportSuccess={handleNewReportSuccess} 
               toggleNewReportForm={toggleNewReportForm}
               />
           }
