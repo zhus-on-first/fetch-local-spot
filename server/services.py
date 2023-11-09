@@ -9,6 +9,32 @@ from models import User, Report, ReportedPhoto, ReportedFeature
 
 fake = Faker()
 
+def create_user(email, user_id, picture_url, username, first_name, last_name):
+    new_user = User(
+        email=email,
+        propelauth_user_id=user_id,
+        propelauth_picture_url=picture_url,
+        propelauth_first_name=first_name,
+        propelauth_last_name=last_name,
+        propelauth_username=username
+    )
+    db.session.add(new_user)
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+def delete_user(user_id):
+    user = User.query.filter_by(propelauth_user_id=user_id).first()
+    if user:
+        db.session.delete(user)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
 def make_report(new_report_data):
     # Fetch or create the User
     user_id = new_report_data["user_id"]

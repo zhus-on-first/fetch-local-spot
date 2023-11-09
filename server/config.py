@@ -20,6 +20,10 @@ load_dotenv()
 auth_url = os.getenv('PROPELAUTH_URL')
 api_key = os.getenv('PROPELAUTH_API_KEY')
 
+# Use environmental variables for Svi
+svix_api_secret = os.getenv('SVIX_SIGNING_SECRET')
+svix_user_webhook_endpoint = os.getenv('SVIX_USER_WEBHOOK_ENDPOINT')
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

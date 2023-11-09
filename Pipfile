@@ -18,6 +18,7 @@ flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 propelauth-flask = "*"
 python-dotenv = "*"
+svix = "*"
 
 [requires]
 python_full_version = "3.8.13"

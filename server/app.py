@@ -5,14 +5,16 @@
 # Remote library imports
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
-from flask import request
+from flask import request, abort
 from flask_restful import Resource
 from faker import Faker
 import traceback
+from svix import Webhook
+from svix.exceptions import WebhookVerificationError
 
 # Local imports
-from config import app, db, api, auth
-from services import make_report, patch_report
+from config import app, db, api, auth, svix_api_secret
+from services import make_report, patch_report, create_user, delete_user
 
 # Add your model imports
 from models import User, Report, Location, Feature
@@ -30,29 +32,55 @@ api.add_resource(Index, "/")
 
 class UserList(Resource):
     
-    @auth.require_user
     def get(self):
         users = User.query.all()
         user_schema = UserSchema(many=True)
         return user_schema.dump(users), 200
-    
-    @auth.require_user
-    def post(self):
-        user_schema = UserSchema()
-        try:
-            user_data = request.get_json()
-            new_user = user_schema.load(user_data)
-            db.session.add(new_user)
-            db.session.commit()
-            return user_schema.dump(new_user), 201
-        except ValidationError as e:
-            return e.messages, 400
-        except IntegrityError:
-            db.session.rollback()
-            return {"message": "Username or email already exists."}, 400
 
 api.add_resource(UserList, "/users")
 
+class SvixWebhookHandler(Resource):
+    def post(self):
+        # Retrieve the raw payload
+        payload = request.get_data(as_text=True)
+        
+        # Retrieve all headers from the request
+        headers = dict(request.headers)
+
+        # Initialize a webhook verification object with your secret
+        verifier = Webhook(svix_api_secret)
+
+        try:
+            # Verify the signature using the raw payload and all headers
+            verifier.verify(payload, headers)
+        except WebhookVerificationError:
+            abort(401, 'Invalid signature.')
+
+        # If the signature is verified, parse the JSON payload
+        payload_json = request.get_json()
+
+        # Access the 'event_type' directly based on your sample payload
+        event_type = payload_json['event_type']
+
+        if event_type == "user.created":
+            # Access the user information directly
+            email = payload_json['email']
+            user_id = payload_json['user_id']
+            first_name = payload_json.get('first_name')
+            last_name = payload_json.get('last_name')
+            username = payload_json.get('username')
+            picture_url = payload_json.get('picture_url')
+            create_user(email, user_id, picture_url, username, first_name, last_name)
+
+        elif event_type == "user.deleted":
+            # Access the user ID directly
+            user_id = payload_json['user_id']
+            delete_user(user_id)
+
+        # Respond to Svix to acknowledge receipt of the webhook
+        return {'status': 'success'}, 200
+
+api.add_resource(SvixWebhookHandler, "/svix_user_webhook_endpoint")
 class LocationList(Resource):
 
     @auth.optional_user
