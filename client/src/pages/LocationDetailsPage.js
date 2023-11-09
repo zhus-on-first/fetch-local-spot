@@ -90,7 +90,7 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await refreshReportsResponse.json();
         console.log("Error received:", errorMessages);
-        setErrors(prevErrors => [...prevErrors, ...errorMessages.errors]);
+        throw new Error("Error refreshing reports");
       }
     } catch (error) {
       console.error(`An unexpected error occurred: ${error.message}`);
@@ -118,7 +118,7 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await response.json();
         console.log("Delete failed:", errorMessages)
-        setErrors(prevErrors => [...prevErrors, ...errorMessages.errors]);
+        throw new Error("Error deleting report");
       }
 
     } catch (error) {
@@ -157,7 +157,8 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await response.json();
         console.error("Failed to update report", errorMessages);
-        setErrors(prevErrors => [...prevErrors, ...errorMessages.errors]);
+        // setErrors(prevErrors => [...prevErrors, ...errorMessages.errors]);
+        throw new Error("Error updating report");
       }
     } catch (error) {
       console.error("An error occurred:", error);
