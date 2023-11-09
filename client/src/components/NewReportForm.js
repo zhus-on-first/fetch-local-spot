@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
+// PropelAuth
+import { useAuthInfo, useRedirectFunctions } from "@propelauth/react";
+
 
 function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}){
+    const authInfo = useAuthInfo();
+    const {redirectToLoginPage} = useRedirectFunctions()
+
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -13,6 +19,12 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const [errors, setErrors] = useState([])
+
+    // PropelAuth redirect if not logged in
+    useEffect(() => {
+        if (authInfo.loading) return;
+        if (!authInfo.isLoggedIn) redirectToLoginPage();
+    }, [authInfo, redirectToLoginPage]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -88,6 +100,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authInfo.accessToken}`,
                     },
                     body: JSON.stringify(values),
                 });
@@ -143,7 +156,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
         <form onSubmit={formik.handleSubmit}>
             {/* Show dropdown of available user name ids based on initial database fetch */}
             <div>
-                <label>Name ID</label> 
+                <label>User ID</label> 
                 <select
                     name="user_id"
                     value={formik.values.user_id}
