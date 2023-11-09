@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 
 // Local imports
-import Header from "../components/Header";
+import Header from "../layout/Header";
 import LocationCard from "../components/LocationCard";
 import NewReportForm from "../components/NewReportForm";
 import ReportsByLocationId from "../components/ReportsByLocationId";
-import Footer from "../components/Footer";
+import Footer from "../layout/Footer";
 
 
 function LocationDetailsPage() {

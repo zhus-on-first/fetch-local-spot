@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import Search from "../components/Search";
-import Footer from "../components/Footer";
+import Footer from "../layout/Footer";
 
 function NotFoundPage() {
     const location = useLocation();
