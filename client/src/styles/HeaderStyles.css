@@ -1,0 +1,58 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  position: relative; 
+}
+
+.header-logo,
+.header-search, 
+.header-profile {
+  flex: 1;
+}
+
+.header-search {
+  text-align: center;
+  
+}
+
+.header-search input {
+  width: 100%;
+}
+
+.header-profile {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 50%;
+  right: 100px;
+  transform: translateY(-50%);
+}
+
+
+.burger-button {
+  padding: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 24px; /* Height is fine for the icon */
+  width: 35px; /* Width is fine for the icon */
+}
+
+
+.burger-line {
+  display: block;
+  width: 33px;
+  height: 4px;
+  background-color: #333;
+  margin: 6px 0;
+}

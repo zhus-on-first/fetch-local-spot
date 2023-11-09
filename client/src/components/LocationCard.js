@@ -1,5 +1,6 @@
 import React from "react";
 
+import "../styles/LocationCardStyles.css"
 
 function LocationCard({ location }) {
     console.log("Location Card object:", location);
@@ -19,7 +20,7 @@ function LocationCard({ location }) {
         }) : <li>No reported features available</li>;
         
     return (
-        <div>
+        <div className="location-card">
             <h3>Location ID {location.id}: {location.name}</h3>
             <p>{location.address}</p>
             <p>{location.phone}</p>

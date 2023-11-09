@@ -32,6 +32,7 @@ api.add_resource(Index, "/")
 
 class UserList(Resource):
     
+    @auth.optional_user
     def get(self):
         users = User.query.all()
         user_schema = UserSchema(many=True)

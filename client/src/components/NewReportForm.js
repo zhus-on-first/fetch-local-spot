@@ -127,13 +127,14 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
         },
     });
 
+      // Handle submission state
     useEffect(() => {
         if (isSubmitted) {
-            setTimeout(() => {
-                setIsSubmitted(false);
-            }, 5000)
+        const timer = setTimeout(() => setIsSubmitted(false), 5000);
+        return () => clearTimeout(timer);
         }
     }, [isSubmitted]);
+
 
     const handleFeatureChange = (e) => {
         const { value, checked } = e.target;
@@ -252,7 +253,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
         <button type="submit">Submit</button>
         <button type="button" onClick={toggleNewReportForm}>Cancel</button>
 
-        {isSubmitted && <p>Your report has been successfully submitted!</p>}
+        {isSubmitted && <p style={{ color: "red" }}>Your report has been successfully submitted!</p>}
 
         </form>
     );
