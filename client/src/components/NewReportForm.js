@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
+// PropelAuth
+import { useAuthInfo, useRedirectFunctions } from "@propelauth/react";
+
 
 function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}){
+    const authInfo = useAuthInfo();
+    const {redirectToLoginPage} = useRedirectFunctions()
+
     const [formData, setFormData] = useState({
         users: [],
         locations: [],
@@ -14,42 +20,58 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
 
     const [errors, setErrors] = useState([])
 
+    // PropelAuth redirect if not logged in
+    useEffect(() => {
+        if (authInfo.loading) return;
+        if (!authInfo.isLoggedIn) redirectToLoginPage();
+    }, [authInfo, redirectToLoginPage]);
+
     useEffect(() => {
         const fetchData = async () => {
-            
           // Fetch locations
-          const locationResponse = await fetch("/locations");
-          if (locationResponse.ok){
-            const locationData = await locationResponse.json();
-            setFormData(prev => ({ ...prev, locations: locationData}))
-          } else {
-            const errorMessages = await locationResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const locationResponse = await fetch("/locations");
+            if (locationResponse.ok) {
+              const locationData = await locationResponse.json();
+              setFormData(prev => ({ ...prev, locations: locationData }));
+            } else {
+              throw new Error("Error fetching locations");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
+      
           // Fetch user IDs
-          const userResponse = await fetch("/users");
-          if (userResponse.ok){
-            const userData = await userResponse.json();
-            setFormData(prev => ({ ...prev, users: userData}))
-          } else {
-            const errorMessages = await userResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const userResponse = await fetch("/users");
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              setFormData(prev => ({ ...prev, users: userData }));
+            } else {
+              throw new Error("Error fetching users");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
+      
           // Fetch features
-          const featureResponse = await fetch("/features");
-          if (featureResponse.ok){
-            const featureData = await featureResponse.json();
-            setFormData(prev => ({ ...prev, features: featureData}))
-          } else {
-            const errorMessages = await featureResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const featureResponse = await fetch("/features");
+            if (featureResponse.ok) {
+              const featureData = await featureResponse.json();
+              setFormData(prev => ({ ...prev, features: featureData }));
+            } else {
+              throw new Error("Error fetching features");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
-        }
+        };
+      
         fetchData();
-      }, []);
+    }, []);
+      
+
 
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
@@ -78,6 +100,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authInfo.accessToken}`,
                     },
                     body: JSON.stringify(values),
                 });
@@ -90,12 +113,16 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                     formik.resetForm();
                     setIsSubmitted(true);
                 } else {
-                    const errorMessages = await response.json();
-                    setErrors(errorMessages.errors)
+                    if(response.status === 401) {
+                        setErrors(["You are not authorized to submit this report. Please log in."]);
+                    } else {
+                        const errorMessages = await response.json();
+                        setErrors((prevErrors) => [...prevErrors, ...errorMessages.errors]);
+                    }
                 }
             } catch (error) {
                 console.log("An error occurred:", error);
-                setErrors(["An unexpected error occurred"])
+                setErrors((prevErrors) => [...prevErrors, "An unexpected error occurred"]);
             } 
         },
     });
@@ -129,7 +156,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
         <form onSubmit={formik.handleSubmit}>
             {/* Show dropdown of available user name ids based on initial database fetch */}
             <div>
-                <label>Name ID</label> 
+                <label>User ID</label> 
                 <select
                     name="user_id"
                     value={formik.values.user_id}
@@ -203,12 +230,24 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                 />
             </div>
             
-
+        {/* 
             {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>
                 {err}
                 </p>
-            ))}
+            ))} */}
+
+        {/* {errors && <div style={{ color: "red" }}>{errors}</div>} */}
+
+        {
+            errors.length > 0 && (
+                <div style={{ color: "red" }}>
+                    {errors.map((err, index) => (
+                        <p key={index}>{err}</p>
+                    ))}
+                </div>
+            )
+        }
 
         <button type="submit">Submit</button>
         <button type="button" onClick={toggleNewReportForm}>Cancel</button>

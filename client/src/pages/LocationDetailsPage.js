@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 
+// PropelAuth
+import { useAuthInfo, useRedirectFunctions } from "@propelauth/react";
+
 // Local imports
 import Header from "../layout/Header";
 import LocationCard from "../components/LocationCard";
@@ -12,43 +15,52 @@ import Footer from "../layout/Footer";
 function LocationDetailsPage() {
   const { id } = useParams()
 
+  const authInfo = useAuthInfo();
+  const {redirectToLoginPage} = useRedirectFunctions()
+
   // Location Details States
   const [isLoading, setIsLoading] = useState(false);
   const [locationDetails, setLocationDetails] = useState({});
   const [reportsDetails, setReportsDetails] = useState([]);
   const [errors, setErrors] = useState([]);
 
+  // PropelAuth redirect if not logged in
+  useEffect(() => {
+    if (authInfo.loading) return;
+    if (!authInfo.isLoggedIn) redirectToLoginPage();
+  }, [authInfo, redirectToLoginPage]);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-
-    // Fetch location details by location id
-    const locationResponse = await fetch(`/locations/${id}`);
-    console.log("Fetching location data...");
-    if (locationResponse.ok) {
+    setErrors([]);
+    try {
+      // Fetch location details by location id
+      const locationResponse = await fetch(`/locations/${id}`);
+      console.log("Fetching location data...");
+      if (!locationResponse.ok) {
+        const errorMessages = await locationResponse.json();
+        setErrors((prevErrors) => [...prevErrors, ...errorMessages.errors]);
+      }
       const data = await locationResponse.json();
       console.log("Location data received:", data);
-      if (data) {
-        setLocationDetails(data);
-      }
-    } else {
-      const errorMessages = await locationResponse.json();
-      setErrors(errorMessages.errors);
-    }
-
-    // Fetch reports by location id
+      setLocationDetails(data);
+  
+      // Fetch reports by location id
       const reportsResponses = await fetch(`/reports/location/${id}`);
       console.log("Fetching report by location data...");
-      if (reportsResponses.ok) {
-        const data = await reportsResponses.json();
-        console.log("Reports data received:", data);
-        setReportsDetails(data);
-      } else {
+      if (!reportsResponses.ok) {
         const errorMessages = await reportsResponses.json();
-        console.log("Error received:", errorMessages);
-        setErrors(errorMessages.errors);
+        setErrors((prevErrors) => [...prevErrors, ...errorMessages.errors]);
       }
-
-    setIsLoading(false);
+      const reportsData = await reportsResponses.json();
+      console.log("Reports data received:", reportsData);
+      setReportsDetails(reportsData);
+    } catch (error) {
+      // Handle network errors or other exceptions
+      setErrors((prevErrors) => [...prevErrors, `An unexpected error occurred: ${error.message}`]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [id]);
   
   useEffect(() => {
@@ -78,10 +90,11 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await refreshReportsResponse.json();
         console.log("Error received:", errorMessages);
-        setErrors(errorMessages.errors);
+        throw new Error("Error refreshing reports");
       }
     } catch (error) {
       console.error(`An unexpected error occurred: ${error.message}`);
+      setErrors(prevErrors => [...prevErrors, error.toString()]);
     }
   };
 
@@ -95,6 +108,9 @@ function LocationDetailsPage() {
       console.log("Report Id for Deletion:", reportId)
       const response = await fetch(`/reports/${reportId}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${authInfo.accessToken}`,
+        },
       });
 
       if (response.ok) {
@@ -102,10 +118,12 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await response.json();
         console.log("Delete failed:", errorMessages)
+        throw new Error("Error deleting report");
       }
 
     } catch (error) {
       console.log("An error occurred:", error)
+      setErrors(prevErrors => [...prevErrors, error.toString()]);
     }
   }
 
@@ -119,6 +137,7 @@ function LocationDetailsPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${authInfo.accessToken}`,
         },
         body: JSON.stringify(updatedValues),
       });
@@ -138,9 +157,12 @@ function LocationDetailsPage() {
       } else {
         const errorMessages = await response.json();
         console.error("Failed to update report", errorMessages);
+        // setErrors(prevErrors => [...prevErrors, ...errorMessages.errors]);
+        throw new Error("Error updating report");
       }
     } catch (error) {
       console.error("An error occurred:", error);
+      setErrors(prevErrors => [...prevErrors, error.toString()]);
     }
   };
   
@@ -177,11 +199,22 @@ function LocationDetailsPage() {
 
           <Footer />
 
-          {errors.map((err) => (
+          {/* {errors.map((err) => (
             <p key={err} style={{ color: "red" }}>
               {err}
             </p>
-          ))}
+          ))} */}
+
+          {/* {error && <div style={{ color: "red" }}>{errors}</div>} */}
+
+          {errors.length > 0 && (
+            <div style={{ color: "red" }}>
+              {errors.map((err, index) => (
+                <p key={index}>{err}</p>
+              ))}
+            </div>
+          )}
+          
         </>
       )}
     </div>

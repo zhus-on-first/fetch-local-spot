@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
 // Local imports
-import { ThemeContext } from "../ThemeContext";
+import { ThemeContext } from "../styles/ThemeContext";
 import NavBurger from "./NavBurger";
 import "../styles/Header.css"
 
