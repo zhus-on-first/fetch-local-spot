@@ -15,8 +15,14 @@ import Footer from "../layout/Footer";
 function LocationDetailsPage() {
   const { id } = useParams()
 
+  // PropelAuth
   const authInfo = useAuthInfo();
-  const {redirectToLoginPage} = useRedirectFunctions()
+  const { redirectToLoginPage } = useRedirectFunctions();
+  //PropelAuth redirect if not logged in
+  // useEffect(() => {
+  //   if (authInfo.loading) return;
+  //   if (!authInfo.isLoggedIn) redirectToLoginPage();
+  // }, [authInfo, redirectToLoginPage]);
 
   // Location Details States
   const [isLoading, setIsLoading] = useState(false);
@@ -24,11 +30,6 @@ function LocationDetailsPage() {
   const [reportsDetails, setReportsDetails] = useState([]);
   const [errors, setErrors] = useState([]);
 
-  // PropelAuth redirect if not logged in
-  useEffect(() => {
-    if (authInfo.loading) return;
-    if (!authInfo.isLoggedIn) redirectToLoginPage();
-  }, [authInfo, redirectToLoginPage]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -176,16 +177,22 @@ function LocationDetailsPage() {
           <h1>Location Details</h1>
           <LocationCard location={locationDetails} />
 
-          <h2>Add A New Report</h2>
-          {!isFormVisible && <button onClick={toggleNewReportForm}>Add Your Report</button>}
-          {isFormVisible && 
-            <NewReportForm 
-              locationId={id} 
-              handleNewReportSuccess={handleNewReportSuccess} 
-              toggleNewReportForm={toggleNewReportForm}
-              />
-          }
-         
+          {authInfo.isLoggedIn ? (
+            <>
+              <h2>Add A New Report</h2>
+              {!isFormVisible && <button onClick={toggleNewReportForm}>Add Your Report</button>}
+              {isFormVisible && 
+                <NewReportForm 
+                  locationId={id} 
+                  handleNewReportSuccess={handleNewReportSuccess} 
+                  toggleNewReportForm={toggleNewReportForm}
+                />
+              }
+            </>
+          ) : (
+            <button onClick={redirectToLoginPage}>Login to add a new report</button>
+          )}
+
           <div>
           <h2>Reports for this location</h2>
           <ReportsByLocationId 

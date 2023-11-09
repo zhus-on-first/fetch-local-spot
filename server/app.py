@@ -45,41 +45,41 @@ class SvixWebhookHandler(Resource):
         # Retrieve the raw payload
         payload = request.get_data(as_text=True)
         
-        # Retrieve all headers from the request
+        # Retrieve all headers from request
         headers = dict(request.headers)
 
-        # Initialize a webhook verification object with your secret
+        # Initialize a webhook verification object with api key
         verifier = Webhook(svix_api_secret)
 
         try:
             # Verify the signature using the raw payload and all headers
             verifier.verify(payload, headers)
         except WebhookVerificationError:
-            abort(401, 'Invalid signature.')
+            abort(401, "Invalid signature.")
 
         # If the signature is verified, parse the JSON payload
         payload_json = request.get_json()
 
-        # Access the 'event_type' directly based on your sample payload
-        event_type = payload_json['event_type']
+        # Access the "event_type"
+        event_type = payload_json["event_type"]
 
         if event_type == "user.created":
             # Access the user information directly
-            email = payload_json['email']
-            user_id = payload_json['user_id']
-            first_name = payload_json.get('first_name')
-            last_name = payload_json.get('last_name')
-            username = payload_json.get('username')
-            picture_url = payload_json.get('picture_url')
+            email = payload_json["email"]
+            user_id = payload_json["user_id"]
+            first_name = payload_json.get("first_name")
+            last_name = payload_json.get("last_name")
+            username = payload_json.get("username")
+            picture_url = payload_json.get("picture_url")
             create_user(email, user_id, picture_url, username, first_name, last_name)
 
         elif event_type == "user.deleted":
             # Access the user ID directly
-            user_id = payload_json['user_id']
+            user_id = payload_json["user_id"]
             delete_user(user_id)
 
-        # Respond to Svix to acknowledge receipt of the webhook
-        return {'status': 'success'}, 200
+        # Respond to Svix to acknowledge webhook receipt
+        return {"status": "success"}, 200
 
 api.add_resource(SvixWebhookHandler, "/svix_user_webhook_endpoint")
 class LocationList(Resource):
