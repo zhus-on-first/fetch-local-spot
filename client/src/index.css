@@ -1,33 +1,13 @@
-/* :root {
-  --bg: #282c34;
-  --header: #fff;
-  --link: #61dafb;
-  --text: hsla(0, 0%, 100%, 0.88);
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo-container, .search-container, .hamburger-container {
-  flex: 1;
-}
-
-.search-container {
-  text-align: center;
-} */
-
 /* Default (Light) Theme */
 :root {
   --background-color: white;
   --text-color: black;
+  --link: #61dafb;
 }
 
 /* Dark Theme */
 [data-theme="dark"] {
-  --background-color: black;
+  --background-color: rgba(52, 53, 65, 0.95);
   --text-color: white;
 }
 

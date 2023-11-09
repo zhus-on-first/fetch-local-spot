@@ -12,8 +12,8 @@ class UserSchema(SQLAlchemyAutoSchema):
 
     # Define attributes    
     id = auto_field(dump_only=True)
-    username = auto_field(required=True, validate=validate.Length(min=5, error="User name must be at least 5 characters."))
-    email = auto_field(required=True, validate=validate.Email())
+    username = auto_field(required=False, validate=validate.Length(min=5, error="User name must be at least 5 characters."))
+    email = auto_field(required=False, validate=validate.Email())
 
     # Define Meta class
     class Meta:

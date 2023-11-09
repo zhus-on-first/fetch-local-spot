@@ -5,14 +5,16 @@
 # Remote library imports
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
-from flask import request
+from flask import request, abort
 from flask_restful import Resource
 from faker import Faker
 import traceback
+from svix import Webhook
+from svix.exceptions import WebhookVerificationError
 
 # Local imports
-from config import app, db, api
-from services import make_report, patch_report
+from config import app, db, api, auth, svix_api_secret
+from services import make_report, patch_report, create_user, delete_user
 
 # Add your model imports
 from models import User, Report, Location, Feature
@@ -29,34 +31,66 @@ class Index(Resource):
 api.add_resource(Index, "/")
 
 class UserList(Resource):
+    
     def get(self):
         users = User.query.all()
         user_schema = UserSchema(many=True)
         return user_schema.dump(users), 200
-    
-    def post(self):
-        user_schema = UserSchema()
-        try:
-            user_data = request.get_json()
-            new_user = user_schema.load(user_data)
-            db.session.add(new_user)
-            db.session.commit()
-            return user_schema.dump(new_user), 201
-        except ValidationError as e:
-            return e.messages, 400
-        except IntegrityError:
-            db.session.rollback()
-            return {"message": "Username or email already exists."}, 400
 
 api.add_resource(UserList, "/users")
 
+class SvixWebhookHandler(Resource):
+    def post(self):
+        # Retrieve the raw payload
+        payload = request.get_data(as_text=True)
+        
+        # Retrieve all headers from the request
+        headers = dict(request.headers)
+
+        # Initialize a webhook verification object with your secret
+        verifier = Webhook(svix_api_secret)
+
+        try:
+            # Verify the signature using the raw payload and all headers
+            verifier.verify(payload, headers)
+        except WebhookVerificationError:
+            abort(401, 'Invalid signature.')
+
+        # If the signature is verified, parse the JSON payload
+        payload_json = request.get_json()
+
+        # Access the 'event_type' directly based on your sample payload
+        event_type = payload_json['event_type']
+
+        if event_type == "user.created":
+            # Access the user information directly
+            email = payload_json['email']
+            user_id = payload_json['user_id']
+            first_name = payload_json.get('first_name')
+            last_name = payload_json.get('last_name')
+            username = payload_json.get('username')
+            picture_url = payload_json.get('picture_url')
+            create_user(email, user_id, picture_url, username, first_name, last_name)
+
+        elif event_type == "user.deleted":
+            # Access the user ID directly
+            user_id = payload_json['user_id']
+            delete_user(user_id)
+
+        # Respond to Svix to acknowledge receipt of the webhook
+        return {'status': 'success'}, 200
+
+api.add_resource(SvixWebhookHandler, "/svix_user_webhook_endpoint")
 class LocationList(Resource):
+
+    @auth.optional_user
     def get(self):
         locations = Location.query.all()
         location_schema = LocationSchema(many=True)
 
         return location_schema.dump(locations), 200
-
+    
+    @auth.require_user
     def post(self):
         # Initialize schema
         location_schema = LocationSchema()
@@ -77,6 +111,8 @@ class LocationList(Resource):
 api.add_resource(LocationList, "/locations")
 
 class LocationById(Resource):
+
+    @auth.optional_user
     def get(self, id):
         location = Location.query.filter_by(id=id).first()
         if location:
@@ -89,6 +125,8 @@ class LocationById(Resource):
 api.add_resource(LocationById, "/locations/<int:id>")
 
 class LocationByHikingType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             hiking_locations = Location.get_hiking_locations()
@@ -104,6 +142,8 @@ class LocationByHikingType(Resource):
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
 
 class LocationByFoodType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             food_locations = Location.get_food_locations()
@@ -119,6 +159,8 @@ class LocationByFoodType(Resource):
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
 class LocationByRideType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             ride_locations = Location.get_ride_locations()
@@ -134,6 +176,8 @@ class LocationByRideType(Resource):
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
 class FeatureList(Resource):
+
+    @auth.optional_user
     def get(self):
         features = Feature.query.all()
         feature_schema = FeatureSchema(many=True)
@@ -141,11 +185,14 @@ class FeatureList(Resource):
     
 api.add_resource(FeatureList, "/features")
 class ReportList(Resource):
+
+    @auth.optional_user
     def get(self):
         reports = Report.query.all()
         report_schema = GetReportSchema(many=True)
         return report_schema.dump(reports), 200
-     
+    
+    @auth.require_user
     def post(self):
         try:
             # Get JSON data from request
@@ -176,6 +223,8 @@ class ReportList(Resource):
 api.add_resource(ReportList, "/reports")
 
 class ReportById(Resource):
+
+    @auth.optional_user
     def get(self, report_id):
         report = db.session.query(Report).get(report_id)
         report_schema = GetReportSchema()
@@ -184,6 +233,7 @@ class ReportById(Resource):
         else:
             return {"message": "Report not found"}, 404
     
+    @auth.require_user
     def patch(self, report_id):
         # Get JSON data from request
         patch_data = request.get_json()
@@ -207,6 +257,7 @@ class ReportById(Resource):
             db.session.rollback()
             return {"errors": str(e)}, 400
 
+    @auth.require_user
     def delete(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:           
@@ -219,6 +270,8 @@ class ReportById(Resource):
 api.add_resource(ReportById, "/reports/<int:report_id>")
 
 class ReportsByLocationId(Resource):
+
+    @auth.optional_user
     def get(self, location_id):
         reports = Report.query.filter_by(location_id=location_id).all()
         reports_schema = GetReportsByLocationIdSchema(many=True)

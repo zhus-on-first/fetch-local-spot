@@ -8,19 +8,12 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(10), unique=True, nullable=True)
-    email = db.Column(db.String(40), unique=True, nullable=True)
-    password = db.Column(db.String(100), nullable=True)
-    propelauth_user_id = db.Column(db.String(36), unique=True, nullable=True)
-    propelauth_picture_url = db.Column(db.String(255), nullable=True)
-    propelauth_first_name = db.Column(db.String(15), nullable=True)
-    propelauth_last_name = db.Column(db.String(15), nullable=True)
-    propelauth_username = db.Column(db.String(36), nullable=True)
-    propelauth_email = db.Column(db.String(40), unique=True, nullable=True)
-
+    username = db.Column(db.String(10), unique=True, nullable=False)
+    email = db.Column(db.String(40), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
     # A user has many reports
-    reports = db.relationship("Report", back_populates="user", cascade="all, delete-orphan")
+    reports = db.relationship("Report", back_populates="user")
 
     # A user has many reported photos through reports
     reported_photos = association_proxy("reports", "reported_photos")

@@ -1,7 +1,7 @@
 import React from "react";
 
-import Header from "../components/Header";
-import HorizontalFilter from "../components/HorizontalFilter";
+import Header from "../layout/Header";
+import HorizontalFilter from "../layout/HorizontalFilter";
 import LocationList from "../components/LocationList";
 
 function HomePage() {
