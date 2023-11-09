@@ -12,7 +12,7 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
 
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const [errors, setErrors] = useState([])
+    const [errors, setErrors] = useState("")
 
     useEffect(() => {
         const fetchData = async () => {
@@ -86,12 +86,16 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                     const newReport = await response.json();
                     console.log('New Report:', newReport);
                     handleNewReportSuccess(newReport)
-                    setErrors([]);
+                    setErrors("");
                     formik.resetForm();
                     setIsSubmitted(true);
                 } else {
-                    const errorMessages = await response.json();
-                    setErrors(errorMessages.errors)
+                    if(response.status === 401) {
+                        setErrors('You are not authorized to submit this report. Please log in.');
+                    } else {
+                        const errorMessages = await response.json();
+                        setErrors(errorMessages.message || 'An unexpected error occurred.');
+                    }
                 }
             } catch (error) {
                 console.log("An error occurred:", error);
@@ -203,12 +207,16 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                 />
             </div>
             
-
+{/* 
             {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>
                 {err}
                 </p>
-            ))}
+            ))} */}
+
+        {/* Display a single error message */}
+        {errors && <div style={{ color: "red" }}>{errors}</div>}
+
 
         <button type="submit">Submit</button>
         <button type="button" onClick={toggleNewReportForm}>Cancel</button>
