@@ -4,15 +4,19 @@ import { withAuthInfo, useRedirectFunctions, useLogoutFunction } from '@propelau
 // Local imports
 import Header from '../layout/Header';
 
-function UserProfile(props) {
+function UserProfile({ isLoggedIn, user }) {
   const {redirectToLoginPage, redirectToSignupPage, redirectToAccountPage} = useRedirectFunctions()
   const logoutFunction = useLogoutFunction()
 
-  if (props.isLoggedIn) {
+  if (isLoggedIn) {
       return (
         <div>
           <Header />
-          <p>You are logged in as {props.user.email}</p>
+          <span>
+            <h2>User Info</h2>
+            {user && user.pictureUrl && <img src={user.pictureUrl} className="pictureUrl" alt="profile pic" />}
+            <pre>user: {JSON.stringify(user, null, 2)}</pre>
+          </span>
           <button onClick={redirectToAccountPage}>Account</button>
           <button onClick={logoutFunction }>Logout</button>
         </div>

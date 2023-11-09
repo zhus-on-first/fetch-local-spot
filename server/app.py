@@ -11,7 +11,7 @@ from faker import Faker
 import traceback
 
 # Local imports
-from config import app, db, api
+from config import app, db, api, auth
 from services import make_report, patch_report
 
 # Add your model imports
@@ -29,11 +29,14 @@ class Index(Resource):
 api.add_resource(Index, "/")
 
 class UserList(Resource):
+    
+    @auth.require_user
     def get(self):
         users = User.query.all()
         user_schema = UserSchema(many=True)
         return user_schema.dump(users), 200
     
+    @auth.require_user
     def post(self):
         user_schema = UserSchema()
         try:
@@ -51,12 +54,15 @@ class UserList(Resource):
 api.add_resource(UserList, "/users")
 
 class LocationList(Resource):
+
+    @auth.optional_user
     def get(self):
         locations = Location.query.all()
         location_schema = LocationSchema(many=True)
 
         return location_schema.dump(locations), 200
-
+    
+    @auth.require_user
     def post(self):
         # Initialize schema
         location_schema = LocationSchema()
@@ -77,6 +83,8 @@ class LocationList(Resource):
 api.add_resource(LocationList, "/locations")
 
 class LocationById(Resource):
+
+    @auth.optional_user
     def get(self, id):
         location = Location.query.filter_by(id=id).first()
         if location:
@@ -89,6 +97,8 @@ class LocationById(Resource):
 api.add_resource(LocationById, "/locations/<int:id>")
 
 class LocationByHikingType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             hiking_locations = Location.get_hiking_locations()
@@ -104,6 +114,8 @@ class LocationByHikingType(Resource):
 api.add_resource(LocationByHikingType, "/locations/find-a-hike")
 
 class LocationByFoodType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             food_locations = Location.get_food_locations()
@@ -119,6 +131,8 @@ class LocationByFoodType(Resource):
 api.add_resource(LocationByFoodType, "/locations/find-a-food-spot")
 
 class LocationByRideType(Resource):
+
+    @auth.optional_user
     def get(self):
         try:
             ride_locations = Location.get_ride_locations()
@@ -134,6 +148,8 @@ class LocationByRideType(Resource):
 api.add_resource(LocationByRideType, "/locations/find-a-ride")
 
 class FeatureList(Resource):
+
+    @auth.optional_user
     def get(self):
         features = Feature.query.all()
         feature_schema = FeatureSchema(many=True)
@@ -141,11 +157,14 @@ class FeatureList(Resource):
     
 api.add_resource(FeatureList, "/features")
 class ReportList(Resource):
+
+    @auth.optional_user
     def get(self):
         reports = Report.query.all()
         report_schema = GetReportSchema(many=True)
         return report_schema.dump(reports), 200
-     
+    
+    @auth.require_user
     def post(self):
         try:
             # Get JSON data from request
@@ -176,6 +195,8 @@ class ReportList(Resource):
 api.add_resource(ReportList, "/reports")
 
 class ReportById(Resource):
+
+    @auth.optional_user
     def get(self, report_id):
         report = db.session.query(Report).get(report_id)
         report_schema = GetReportSchema()
@@ -184,6 +205,7 @@ class ReportById(Resource):
         else:
             return {"message": "Report not found"}, 404
     
+    @auth.require_user
     def patch(self, report_id):
         # Get JSON data from request
         patch_data = request.get_json()
@@ -207,6 +229,7 @@ class ReportById(Resource):
             db.session.rollback()
             return {"errors": str(e)}, 400
 
+    @auth.require_user
     def delete(self, report_id):
         report = db.session.query(Report).filter_by(id=report_id).first()
         if report is None:           
@@ -219,6 +242,8 @@ class ReportById(Resource):
 api.add_resource(ReportById, "/reports/<int:report_id>")
 
 class ReportsByLocationId(Resource):
+
+    @auth.optional_user
     def get(self, location_id):
         reports = Report.query.filter_by(location_id=location_id).all()
         reports_schema = GetReportsByLocationIdSchema(many=True)
