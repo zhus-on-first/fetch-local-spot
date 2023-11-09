@@ -1,0 +1,7 @@
+.location-card {
+    border: 1px solid var(--border-color);
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: var(--background-color);
+  }

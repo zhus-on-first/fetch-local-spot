@@ -1,6 +1,8 @@
 import React from "react"
 import { Link } from "react-router-dom"
 
+import "../styles/HorizontalFilterStyles.css"
+
 function HorizontalFilter() {
     return (
         <div className="horizontal-filter">

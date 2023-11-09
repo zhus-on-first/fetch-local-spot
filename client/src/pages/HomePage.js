@@ -10,7 +10,6 @@ function HomePage() {
     <div>
         <Header />
         <HorizontalFilter />
-        <h3>All Locations:</h3>
         <LocationList />
     </div>
   );

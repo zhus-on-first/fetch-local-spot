@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import LocationCard from "./LocationCard";
 
+import "../styles/LocationCardStyles.css"
+
 function LocationList() {
     const [locations, setLocations] = useState([]);
 

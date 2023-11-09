@@ -1,0 +1,18 @@
+.horizontal-filter {
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  .horizontal-filter a {
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 0.5rem;
+  }
+  
+  .horizontal-filter a:hover {
+    color: var(--hover-link-color);
+    text-decoration: underline;
+  }

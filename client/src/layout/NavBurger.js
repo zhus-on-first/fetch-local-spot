@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import { useRedirectFunctions } from '@propelauth/react';
 import { useLogoutFunction } from '@propelauth/react';
 
-import "../styles/NavBurger.css"
+import "../styles/NavBurgerStyles.css"
 
 function NavBurger(){
     const history = useHistory();

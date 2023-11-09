@@ -2,14 +2,40 @@
 :root {
   --background-color: white;
   --text-color: black;
-  --link: #61dafb;
+  --link-color: #1E88E5; /* Medium blue */
+  --visited-link-color: #9E9E9E; /* Mid-tone gray */
+  --hover-link-color: #2196F3; /* Lighter blue */
+  --active-link-color: #1565C0; /* Dark blue */
+  --border-color: #ddd; /* Example value */
+  --box-shadow-color: rgba(0, 0, 0, 0.1); /* Example value */
 }
 
 /* Dark Theme */
 [data-theme="dark"] {
   --background-color: rgba(52, 53, 65, 0.95);
   --text-color: white;
+  --border-color: #333; /* Example value */
+  --box-shadow-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Link styles */
+a:link {
+  color: var(--link-color); /* Use the same color for both themes */
+}
+
+a:visited {
+  color: var(--visited-link-color); /* Updated to mid-tone gray */
+}
+
+a:hover {
+  color: var(--hover-link-color);
+}
+
+a:active {
+  color: var(--active-link-color);
+}
+
+
 
 header {
   display: flex;

@@ -1,9 +1,0 @@
-.search-container input {
-    width: 200px;
-    color: #000; 
-  }
-  
-  .search-container input::placeholder {
-    color: #aaa;
-  }
-  

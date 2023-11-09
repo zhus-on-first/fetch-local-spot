@@ -1,0 +1,36 @@
+.navburger-container {
+  position: absolute;
+  top: 100%; /* Position below the burger icon */
+  right: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f8f8;
+  border-radius: 5px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 150px; /* Set a minimum width for the container */
+}
+
+/* This will target the buttons inside your NavBurger when it is active */
+.navburger-container button {
+  padding: 10px 15px; /* Adjust padding to fit content */
+  border: 1px solid #ccc; /* Style the border as needed */
+  background: white; /* Or any background color you want */
+  color: #333; /* Text color */
+  margin: 5px 0; /* Spacing between buttons */
+  width: auto; /* Adjust width to content */
+  text-align: center; /* Center the text inside the buttons */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional: add shadow for depth */
+  border-radius: 5px; /* Optional: round the corners */
+}
+
+.navburger-container:hover {
+  background-color: #e8e8e8;
+}
+
+@media (max-width: 768px) {
+  .navburger-container {
+      right: 10px;
+  }
+}
