@@ -15,7 +15,7 @@ function NavBurger(){
 
     const handleLogin = () => {
     // redirectToLoginPage({ postLoginRedirectUrl: 'http://yourapp.com/home' });
-    redirectToLoginPage();
+        redirectToLoginPage();
     };
 
     const handleRegister = () => {

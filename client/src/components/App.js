@@ -17,6 +17,7 @@ import FindRidePage from "../pages/FindRidePage";
 import FindFoodPage from "../pages/FindFoodPage";
 import LocationDetailsPage from "../pages/LocationDetailsPage";
 import NotFoundPage from "../pages/NotFoundPage";
+import LogOutPage from "../auth/LogOut";
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
         <Route path="/locations/:id">
           <LocationDetailsPage />
         </Route>
+        <Route path="/logout" component={LogOutPage} />
         <Route>
           <NotFoundPage />
         </Route>

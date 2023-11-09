@@ -1,26 +1,31 @@
 import React from 'react';
-import { useAuthInfo, useRedirectFunctions } from '@propelauth/react';
+import { withAuthInfo, useRedirectFunctions, useLogoutFunction } from '@propelauth/react';
 
-function UserProfile() {
-  const authInfo = useAuthInfo();
-  const { redirectToLoginPage } = useRedirectFunctions();
+// Local imports
+import Header from '../layout/Header';
 
-  const handleLogin = () => {
-    redirectToLoginPage();
-  };
+function UserProfile(props) {
+  const {redirectToLoginPage, redirectToSignupPage, redirectToAccountPage} = useRedirectFunctions()
+  const logoutFunction = useLogoutFunction()
 
-  if (authInfo.loading) {
-    return <div>Loading...</div>;
-  } else if (authInfo.isLoggedIn) {
-    return <div>Email: {authInfo.user.email}</div>;
+  if (props.isLoggedIn) {
+      return (
+        <div>
+          <Header />
+          <p>You are logged in as {props.user.email}</p>
+          <button onClick={redirectToAccountPage}>Account</button>
+          <button onClick={logoutFunction }>Logout</button>
+        </div>
+      )
   } else {
-    return (
-      <div>
-        You are not logged in.
-        <button onClick={handleLogin}>Click here to login.</button> 
-      </div>
-    );
+      return (
+        <div>
+          <p>You are not logged in</p>
+          <button onClick={redirectToLoginPage}>Login</button>
+          <button onClick={redirectToSignupPage}>Signup</button>
+        </div>
+      )
   }
 }
 
-export default UserProfile;
+export default withAuthInfo(UserProfile);
