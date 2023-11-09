@@ -12,44 +12,54 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
 
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const [errors, setErrors] = useState("")
+    const [errors, setErrors] = useState([])
 
     useEffect(() => {
         const fetchData = async () => {
-            
           // Fetch locations
-          const locationResponse = await fetch("/locations");
-          if (locationResponse.ok){
-            const locationData = await locationResponse.json();
-            setFormData(prev => ({ ...prev, locations: locationData}))
-          } else {
-            const errorMessages = await locationResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const locationResponse = await fetch("/locations");
+            if (locationResponse.ok) {
+              const locationData = await locationResponse.json();
+              setFormData(prev => ({ ...prev, locations: locationData }));
+            } else {
+              throw new Error("Error fetching locations");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
+      
           // Fetch user IDs
-          const userResponse = await fetch("/users");
-          if (userResponse.ok){
-            const userData = await userResponse.json();
-            setFormData(prev => ({ ...prev, users: userData}))
-          } else {
-            const errorMessages = await userResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const userResponse = await fetch("/users");
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              setFormData(prev => ({ ...prev, users: userData }));
+            } else {
+              throw new Error("Error fetching users");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
+      
           // Fetch features
-          const featureResponse = await fetch("/features");
-          if (featureResponse.ok){
-            const featureData = await featureResponse.json();
-            setFormData(prev => ({ ...prev, features: featureData}))
-          } else {
-            const errorMessages = await featureResponse.json();
-            setErrors(errorMessages.errors);
+          try {
+            const featureResponse = await fetch("/features");
+            if (featureResponse.ok) {
+              const featureData = await featureResponse.json();
+              setFormData(prev => ({ ...prev, features: featureData }));
+            } else {
+              throw new Error("Error fetching features");
+            }
+          } catch (error) {
+            setErrors(prevErrors => [...prevErrors, error.toString()]);
           }
-
-        }
+        };
+      
         fetchData();
-      }, []);
+    }, []);
+      
+
 
     const formSchema = Yup.object({
         user_id: Yup.number().required("Required"),
@@ -86,20 +96,20 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                     const newReport = await response.json();
                     console.log('New Report:', newReport);
                     handleNewReportSuccess(newReport)
-                    setErrors("");
+                    setErrors([]);
                     formik.resetForm();
                     setIsSubmitted(true);
                 } else {
                     if(response.status === 401) {
-                        setErrors('You are not authorized to submit this report. Please log in.');
+                        setErrors(["You are not authorized to submit this report. Please log in."]);
                     } else {
                         const errorMessages = await response.json();
-                        setErrors(errorMessages.message || 'An unexpected error occurred.');
+                        setErrors((prevErrors) => [...prevErrors, ...errorMessages.errors]);
                     }
                 }
             } catch (error) {
                 console.log("An error occurred:", error);
-                setErrors(["An unexpected error occurred"])
+                setErrors((prevErrors) => [...prevErrors, "An unexpected error occurred"]);
             } 
         },
     });
@@ -207,16 +217,24 @@ function NewReportForm({handleNewReportSuccess, toggleNewReportForm, locationId}
                 />
             </div>
             
-{/* 
+        {/* 
             {errors.map((err) => (
                 <p key={err} style={{ color: "red" }}>
                 {err}
                 </p>
             ))} */}
 
-        {/* Display a single error message */}
-        {errors && <div style={{ color: "red" }}>{errors}</div>}
+        {/* {errors && <div style={{ color: "red" }}>{errors}</div>} */}
 
+        {
+            errors.length > 0 && (
+                <div style={{ color: "red" }}>
+                    {errors.map((err, index) => (
+                        <p key={index}>{err}</p>
+                    ))}
+                </div>
+            )
+        }
 
         <button type="submit">Submit</button>
         <button type="button" onClick={toggleNewReportForm}>Cancel</button>
