@@ -16,11 +16,11 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-# Use environment variables for the PropelAuth configuration
+# PropelAuth configuration environmental variables
 auth_url = os.getenv('PROPELAUTH_URL')
 api_key = os.getenv('PROPELAUTH_API_KEY')
 
-# Use environmental variables for Svi
+# Svix environmental variables
 svix_api_secret = os.getenv('SVIX_SIGNING_SECRET')
 svix_user_webhook_endpoint = os.getenv('SVIX_USER_WEBHOOK_ENDPOINT')
 
@@ -28,7 +28,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
-auth = init_auth(auth_url, api_key)
+auth = init_auth(auth_url, api_key)  # PropelAuth
 
 # Define metadata, instantiate db
 metadata = MetaData(naming_convention={
